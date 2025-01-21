@@ -88,4 +88,6 @@ const NativeDialog = React.forwardRef<
   );
 });
 
+NativeDialog.displayName = 'NativeDialog';
+
 export { NativeDialog };

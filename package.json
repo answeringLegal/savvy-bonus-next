@@ -1,12 +1,12 @@
 {
-  "name": "your-app-name",
+  "name": "bonusblast",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "node initdb.js && next dev",
     "dev:https": "next dev --experimental-https",
-    "build": "next build",
-    "start": "next start",
+    "build": "node initdb.js && next build",
+    "start": "node initdb.js && next start",
     "lint": "next lint"
   },
   "dependencies": {
