@@ -1,5 +1,6 @@
 // Desc: This file initializes the database and creates the tables if they don't exist
 import sqlite3 from 'sqlite3';
+import fs from 'fs';
 import path from 'path';
 
 const dbPath = path.join(process.cwd(), 'bonusblast.db');
@@ -64,3 +65,11 @@ export const initDb = () => {
 };
 
 initDb();
+
+// change permissions on the database file so that it can be read and written by the app
+fs.chmodSync(dbPath, 0o777, (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log('Database permissions changed.');
+});
