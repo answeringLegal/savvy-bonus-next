@@ -5,6 +5,7 @@ import {
   HubSpotOwner,
 } from '@/types/hubspot';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { addDays, format } from 'date-fns';
 
 // region Deals
 const useListDeals = () => {
@@ -112,6 +113,7 @@ const useQualifyingDeals = () => {
         ],
         limit: '10',
         properties: ['date_paid', 'hubspot_owner_id', 'deal_name'],
+        isPaidDeal: true,
       };
       const response = await fetch('/api/hubspot/deals/search', {
         method: 'POST',
@@ -137,6 +139,7 @@ const useQualifyingDeals = () => {
  * @description Fetches live qualifying deals based on the provided date range on an interval
  * @returns
  */
+let num_fetches_live = 0;
 const useFetchLiveQualifyingDeals = ({
   startDate,
   endDate,
@@ -147,12 +150,13 @@ const useFetchLiveQualifyingDeals = ({
   return useQuery<BonusBlasterDeals, Error>({
     queryKey: ['live-deals'],
     queryFn: async () => {
+      console.log('fetching live qualifying deals', num_fetches_live++);
       const filters = [
-        {
-          propertyName: 'dealstage',
-          operator: 'IN',
-          values: ['240513405', '240513408'], // 'paid' or 'canceled'
-        },
+        // {
+        //   propertyName: 'dealstage',
+        //   operator: 'IN',
+        //   values: ['240513405', '240513408'], // 'paid' or 'canceled'
+        // },
         {
           propertyName: 'previously_paying_customer_',
           operator: 'IN',
@@ -161,7 +165,7 @@ const useFetchLiveQualifyingDeals = ({
         {
           operator: 'IN',
           propertyName: 'pipeline',
-          values: ['137772405'],
+          values: ['137772405'], // 'Onboarding2'
         },
       ] as any[];
 
@@ -179,7 +183,8 @@ const useFetchLiveQualifyingDeals = ({
             filters,
           },
         ],
-        limit: '20',
+        isPaidDeal: false,
+        limit: '200',
         properties: ['date_paid', 'hubspot_owner_id', 'deal_name'],
       };
       const response = await fetch('/api/hubspot/deals', {
@@ -201,6 +206,8 @@ const useFetchLiveQualifyingDeals = ({
  * @description Fetches qualifying deals based on the provided date range
  * @returns
  */
+
+let num_fetches_qual = 0;
 const useFetchQualifyingDeals = ({
   startDate,
   endDate,
@@ -211,15 +218,16 @@ const useFetchQualifyingDeals = ({
   return useQuery<BonusBlasterDeals, Error>({
     queryKey: ['deals'],
     queryFn: async () => {
+      console.log('fetching qualifying deals', num_fetches_qual++);
       const filters = [
         {
-          propertyName: 'dealstage',
           operator: 'IN',
-          values: ['240513405', '240513408'], // 'paid' or 'canceled'
+          propertyName: 'dealstage',
+          values: ['240513405', '240513408'],
         },
         {
-          propertyName: 'previously_paying_customer_',
           operator: 'IN',
+          propertyName: 'previously_paying_customer_',
           values: ['No'],
         },
         {
@@ -231,10 +239,11 @@ const useFetchQualifyingDeals = ({
 
       if (startDate && endDate) {
         filters.push({
-          propertyName: 'createdate',
+          propertyName: 'date_paid',
           operator: 'BETWEEN',
           value: startDate,
           highValue: endDate,
+          dateTimeFormat: 'DATE',
         });
       }
       const body = {
@@ -245,6 +254,7 @@ const useFetchQualifyingDeals = ({
         ],
         limit: '200',
         properties: ['date_paid', 'hubspot_owner_id', 'deal_name'],
+        isPaidDeal: true,
       };
       const response = await fetch('/api/hubspot/deals', {
         method: 'POST',
@@ -254,8 +264,52 @@ const useFetchQualifyingDeals = ({
       if (!response.ok) throw new Error('Error fetching data');
       return response.json();
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 10, // 5 minutes
     refetchOnWindowFocus: false,
+  });
+};
+
+const useFetchTodayDeals = () => {
+  return useQuery<BonusBlasterDeals, Error>({
+    queryKey: ['today-deals'],
+    queryFn: async () => {
+      const filters = [
+        {
+          operator: 'IN',
+          propertyName: 'previously_paying_customer_',
+          values: ['No'],
+        },
+        {
+          operator: 'IN',
+          propertyName: 'pipeline',
+          values: ['137772405'],
+        },
+        {
+          propertyName: 'createdate',
+          operator: 'BETWEEN',
+          value: format(new Date(), 'yyyy-MM-dd'),
+          highValue: format(addDays(new Date(), 1), 'yyyy-MM-dd'), // tomorrow, to get today's deals,
+        },
+      ] as any[];
+
+      const body = {
+        filterGroups: [
+          {
+            filters,
+          },
+        ],
+        limit: '20',
+        properties: ['date_paid', 'hubspot_owner_id', 'deal_name'],
+        isPaid: false,
+      };
+      const response = await fetch('/api/hubspot/deals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) throw new Error('Error fetching data');
+      return response.json();
+    },
   });
 };
 
@@ -290,6 +344,7 @@ export {
   useListDeal,
   useQualifyingDeals,
   useFetchLiveQualifyingDeals,
+  useFetchTodayDeals,
   useFetchQualifyingDeals,
   useGetOwners,
   useGetOwner,

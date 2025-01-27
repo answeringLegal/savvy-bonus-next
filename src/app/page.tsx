@@ -4,11 +4,62 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LiveBonusBlast from '@/components/live-bonus-blast';
 import BonusBlast from '@/components/bonus-blast';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
+import { PAGE_TIMER_SEC_LIVE, PAGE_TIMER_SEC_PAST } from '@/config';
 
 export default function Home() {
+  const [timer, setTimer] = React.useState(0);
+  const searchParams = useSearchParams();
+  const [activeTab, setActiveTab] = React.useState(
+    searchParams.get('view') || 'past'
+  );
+
+  React.useEffect(() => {
+    window.history.replaceState(null, '', `/?view=${activeTab}`);
+    // reset timer
+    setTimer(0);
+  }, [activeTab]);
+
+  // an effect to change the active base on an interval
+  React.useEffect(() => {
+    const secondsInterval = setInterval(() => {
+      setTimer((prev) => prev + 1);
+    }, 1000);
+
+    const interval = setInterval(() => {
+      setActiveTab((prev) => (prev === 'live' ? 'past' : 'live'));
+      console.log('changing tab');
+    }, 1000 * (activeTab === 'live' ? PAGE_TIMER_SEC_LIVE : PAGE_TIMER_SEC_PAST));
+
+    return () => {
+      clearInterval(secondsInterval);
+      clearInterval(interval);
+    };
+  }, [activeTab]);
   return (
-    <div className=''>
-      <Tabs defaultValue='past' className='flex flex-col'>
+    <div className='p-4 h-full'>
+      <div className='h-3 bg-accent/30 backdrop-blur-lg fixed top-0 left-0 right-0'>
+        <div
+          className='h-full bg-white/70 transition-all duration-1000'
+          style={{
+            width: `${
+              (timer /
+                (activeTab === 'live'
+                  ? PAGE_TIMER_SEC_LIVE
+                  : PAGE_TIMER_SEC_PAST)) *
+              100
+            }%`,
+          }}
+        ></div>
+        <span className='text-right w-full block text-xs'></span>
+      </div>
+      {/* {timer} */}
+      <Tabs
+        defaultValue={activeTab}
+        className='flex flex-col h-full'
+        onValueChange={(value) => setActiveTab(value)}
+        value={activeTab}
+      >
         <TabsList className='mx-auto'>
           <TabsTrigger value='past' className='relative'>
             Past

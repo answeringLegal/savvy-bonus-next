@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Mulish } from 'next/font/google';
+import { Mulish, Poppins, Lexend } from 'next/font/google';
 import './globals.css';
 import {
   getKindeServerSession,
@@ -14,7 +14,10 @@ import { config } from '@/site/config';
 import Link from 'next/link';
 import { CogIcon } from 'lucide-react';
 
-const font = Mulish({ subsets: ['latin'] });
+const font = Lexend({
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700', '800', '900'],
+});
 
 export const metadata: Metadata = {
   title: config.name,
@@ -51,12 +54,7 @@ export default async function RootLayout({
 
   return (
     <html lang='en' suppressHydrationWarning>
-      <body
-        className={font.className}
-        style={{
-          minHeight: '100dvh',
-        }}
-      >
+      <body className={font.className}>
         <ReactQueryProvider>
           <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
             {/* {!(await isAuthenticated()) ? (
@@ -88,15 +86,15 @@ export default async function RootLayout({
                 <div className='relative col-span-1 hidden select-none overflow-hidden rounded-l-3xl bg-gradient-to-r from-primary/5 to-background sm:block'></div>
               </main>
             ) : ( */}
-            <main className='app flex min-h-[100dvh] flex-col'>
-              <div className='fixed top-4 right-4 z-50'>
+            <main className='app flex h-[100dvh] flex-col overflow-y-hidden'>
+              {/* <div className='fixed top-4 right-4 z-50'>
                 <Link href='/settings'>
                   <Button variant='outline' size={'icon'}>
                     <CogIcon className='size-4' />
                   </Button>
                 </Link>
-              </div>
-              <section className='app-content p-3 flex flex-col overflow-y-auto relative'>
+              </div> */}
+              <section className='app-content flex flex-col relative flex-1'>
                 {children}
               </section>
             </main>

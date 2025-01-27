@@ -13,15 +13,14 @@ import {
 import { useFetchQualifyingDeals } from '@/hooks/useHubspot';
 import { SalesmanPodium } from './salesman-podium';
 import QuarterIntervalDuration from './quarter-interval';
-import { SalemanCard } from './salesman-card';
+import { SalesmanCard } from './salesman-card';
 import { Loader } from '@/components/ui/loader';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import Image from 'next/image';
 import { NativeDialog } from './ui/native-dialog';
-import { useGetSetting } from '@/hooks/settings/useSettings';
+import { ACCOUNT_VALUE, MAX_PARTICIPANTS } from '@/config';
+import { getSalemanBonus } from '@/hooks/utils/bonus';
 
-const ACCOUNT_VALUE_KEY = 'Deal Value';
-const ACCOUNT_VALUE = 100;
 const quarterStart = format(
   startOfQuarter(subQuarters(new Date(), 1)),
   'yyyy-MM-dd'
@@ -31,32 +30,13 @@ const quarterEnd = format(
   'yyyy-MM-dd'
 );
 export default function BonusBlast() {
-  const { data: dealValueData, isLoading: isDealValueDataLoading } =
-    useGetSetting(ACCOUNT_VALUE_KEY);
   const { data, isLoading } = useFetchQualifyingDeals({
     startDate: quarterStart,
     endDate: quarterEnd,
   });
-  const [showAlert, setShowAlert] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowAlert(true);
-    }, 3000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   // effect to close the dialog after 10 seconds if it's still open
-  useEffect(() => {
-    if (showAlert) {
-      const timer = setTimeout(() => {
-        setShowAlert(false);
-      }, 5000);
 
-      return () => clearTimeout(timer);
-    }
-  }, [showAlert]);
   if (isLoading)
     return (
       <div>
@@ -77,7 +57,7 @@ export default function BonusBlast() {
         deals,
       };
     })
-    .slice(1, 9)
+    .slice(0, MAX_PARTICIPANTS)
     .sort((a, b) => b?.deals?.length - a?.deals?.length);
 
   const salesmenPodium = [
@@ -90,9 +70,21 @@ export default function BonusBlast() {
     (acc, deals) => acc + deals?.length || 0,
     0
   );
+
   return (
-    <div>
-      {JSON.stringify(dealValueData)}
+    <div className='flex flex-col h-full'>
+      <div
+        className='
+        bg-gradient-to-b
+        from-blue-500/40
+        to-transparent
+        w-full
+        h-[200px]
+        left-0
+        top-0
+        absolute
+        z-[-1] animate-fade-in'
+      ></div>
       {/* <DotLottieReact
         className='absolute top-0 left-0 w-full h-full'
         src='https://lottie.host/f7e6efe7-8a03-4627-9c33-0fb6e10f0fe2/OEzLw7vXwg.lottie'
@@ -119,9 +111,25 @@ export default function BonusBlast() {
           </h2>
         </motion.div>
       </motion.div> */}
-      <header className='flex flex-col justify-center items-center my-24'>
+      <div className='text-center absolute top-4 right-4 z-50'>
+        <p className='text-sm text-foreground/50'>Final Results Pending</p>
+        {/* <h2 className='text-foreground/80 font-bold text-2xl'>
+          {formatDistance(
+            addDays(endOfQuarter(subQuarters(new Date(), 1)), 30),
+            new Date(),
+            {
+              addSuffix: true,
+            }
+          )}
+        </h2> */}
+        <QuarterIntervalDuration
+          startDate={new Date()}
+          endDate={addDays(endOfQuarter(subQuarters(new Date(), 1)), 30)}
+        />
+      </div>
+      <header className='my-16 sm:my-32'>
         <motion.div
-          className='flex justify-center items-end space-x-10 w-full relative'
+          className='flex justify-center items-end -space-x-2 my-10 relative max-w-3xl mx-auto'
           initial='hidden'
           animate='visible'
           variants={{
@@ -161,11 +169,16 @@ export default function BonusBlast() {
                   }}
                   key={salesman.place}
                   salesman={salesman}
+                  bonus={getSalemanBonus(
+                    total_paid_accounts * ACCOUNT_VALUE,
+                    salesman.place
+                  )}
                 />
               );
           })}
         </motion.div>
       </header>
+
       {/* <AnimatePresence>
         <motion.div
           initial={{ scale: 1, x: 0, y: 0 }}
@@ -216,56 +229,47 @@ export default function BonusBlast() {
           </motion.div>
         </motion.div>
       </AnimatePresence> */}
-      <NativeDialog
-        open={showAlert}
-        onClose={() => setShowAlert(false)}
-        dialogTitle={<div>Test</div>}
-        variant={'large'}
-      >
-        <motion.div className='text-center my-8 p-2 rounded-r-lg max-w-md mx-auto relative'>
-          <Image
-            src='/clock2.png'
-            width={125}
-            height={125}
-            quality={100}
-            alt='rocket'
-            className='absolute top-12 left-6 transform -translate-x-1/2 -translate-y-1/2 '
-          />
-          <div className='absolute top-6 left-6 transform -translate-x-1/2 -translate-y-1/2 blur-3xl -z-10 bg-primary h-20 w-20 rounded-full' />
-          <p className='text-sm text-foreground/50'>Final Results</p>
-          <h2 className='text-foreground/80 font-bold text-2xl'>
-            {formatDistance(
-              addDays(endOfQuarter(subQuarters(new Date(), 1)), 30),
-              new Date(),
-              {
-                addSuffix: true,
-              }
-            )}
-          </h2>
-          <QuarterIntervalDuration
-            startDate={new Date()}
-            endDate={addDays(endOfQuarter(subQuarters(new Date(), 1)), 30)}
-          />
-          <motion.div className='w-full h-8 bg-background rounded-full overflow-hidden'>
-            <motion.div
-              className='h-full bg-primary'
-              initial='hidden'
-              animate='visible'
-              variants={{
-                visible: {
-                  width: '80%',
-                  transition: { duration: 1.5 },
-                },
-                hidden: { width: 0 },
-              }}
-            ></motion.div>
-          </motion.div>
+
+      {/* <motion.div className='text-center my-8 p-2 rounded-r-lg max-w-md mx-auto relative bg-card'>
+        <Image
+          src='/clock2.png'
+          width={125}
+          height={125}
+          quality={100}
+          alt='rocket'
+          className='absolute top-12 left-6 transform -translate-x-1/2 -translate-y-1/2 '
+        />
+        <div className='absolute top-6 left-6 transform -translate-x-1/2 -translate-y-1/2 blur-3xl -z-10 bg-primary h-20 w-20 rounded-full' />
+
+        <QuarterIntervalDuration
+          startDate={new Date()}
+          endDate={addDays(endOfQuarter(subQuarters(new Date(), 1)), 30)}
+        />
+        <motion.div className='w-full h-8 bg-background rounded-full overflow-hidden'>
+          <motion.div
+            className='h-full bg-primary'
+            initial='hidden'
+            animate='visible'
+            variants={{
+              visible: {
+                width: '80%',
+                transition: { duration: 1.5 },
+              },
+              hidden: { width: 0 },
+            }}
+          ></motion.div>
         </motion.div>
-      </NativeDialog>
+      </motion.div> */}
       {/* All Sales */}
-      <div className='grid grid-cols-6 gap-4'>
+
+      <div
+        className='grid grid-cols-6 gap-4'
+        style={{
+          flex: 1,
+        }}
+      >
         <motion.div
-          className='col-span-4 space-y-4'
+          className='col-span-4 space-y-4 overflow-y-auto no-scrollbar flex flex-col'
           initial='hidden'
           animate='visible'
           variants={{
@@ -278,22 +282,24 @@ export default function BonusBlast() {
                 duration: 0.7,
                 delayChildren: 0.3,
                 staggerChildren: 0.05,
+                delay: 0.5,
               },
             },
             hidden: { opacity: 0, y: 20, transition: { duration: 0.2 } },
           }}
         >
-          {orderedSalesmen.map((salesman, index) => {
+          {orderedSalesmen.slice(3).map((salesman, index) => {
             return (
-              <SalemanCard
+              <SalesmanCard
+                className='flex-1'
                 key={index}
                 salesman={{
                   name: salesman.owner,
                   avatar: `https://randomuser.me/api/portraits/men/${index}.jpg`,
-                  prize: salesman?.deals?.length * ACCOUNT_VALUE,
+                  prize: total_paid_accounts * ACCOUNT_VALUE,
                   sales: salesman?.deals?.length,
                 }}
-                place={index + 1}
+                place={index + 4}
               />
             );
           })}

@@ -1,44 +1,42 @@
-import { cn, formatMoney } from '@/lib/utils';
+import { formatMoney } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import ordinal from 'ordinal';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { getSalemanBonus } from '@/hooks/utils/bonus';
+import { AnimatedCard } from './animated-card';
 interface Salesman {
   name: string;
   avatar: string;
   prize: number;
   sales: number;
+  salesToday?: number;
 }
 interface SalesmanCardProps extends React.ComponentProps<typeof motion.div> {
   salesman: Salesman;
   place: number;
 }
-export const SalemanCard: React.FC<SalesmanCardProps> = ({
+export const SalesmanCard: React.FC<SalesmanCardProps> = ({
   salesman,
   children,
   className,
   ...props
 }) => {
+  const progress = {
+    todayDeals: salesman.salesToday || 0 + salesman.sales,
+  };
   return (
-    <motion.div
-      {...props}
-      variants={{
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: { type: 'spring', stiffness: 300, damping: 24 },
-        },
-        hidden: { opacity: 0, y: 20, transition: { duration: 0.2 } },
-      }}
-      className={cn(
-        'p-4 flex items-center gap-4 bg-card rounded-md shadow-lg',
-        className
-      )}
-    >
-      <div className='info flex items-center gap-4'>
+    <AnimatedCard>
+      {/* {salesman.salesToday && salesman.sales > 0 && (
+        <div className='info-2 sales-today flex items-center gap-4 -z-50'>
+          <span className='font-bold text-primary'>Today</span>
+          <div className='sales font-bold text-xl'>+{salesman.salesToday}</div>
+        </div>
+      )} */}
+      <div className='info-1 flex items-center gap-4'>
         <div className='place text-3xl'>{ordinal(props.place)}</div>
         {/* <img src={salesman.avatar} alt={salesman.name} className='avatar' /> */}
-        <Avatar>
-          <AvatarImage src={salesman.avatar} />
+        <Avatar className='w-16 h-16'>
+          <AvatarImage src={`/salesmen/${salesman.name}.png`} />
           <AvatarFallback>
             {salesman.name
               .split(' ')
@@ -50,32 +48,10 @@ export const SalemanCard: React.FC<SalesmanCardProps> = ({
         <span>-</span>
         <div className='sales font-bold text-xl'>{salesman.sales}</div>
       </div>
+
       <div className='prize ml-auto font-extrabold text-primary text-3xl'>
         {formatMoney(getSalemanBonus(salesman.prize, props.place))}
       </div>
-    </motion.div>
+    </AnimatedCard>
   );
 };
-
-function getSalemanBonus(totalPool: number, place: number) {
-  switch (place) {
-    case 1:
-      return totalPool * 0.3;
-    case 2:
-      return totalPool * 0.2;
-    case 3:
-      return totalPool * 0.15;
-    case 4:
-      return totalPool * 0.1;
-    case 5:
-      return totalPool * 0.08;
-    case 6:
-      return totalPool * 0.07;
-    case 7:
-      return totalPool * 0.05;
-    case 8:
-      return totalPool * 0.05;
-    default:
-      return 0;
-  }
-}

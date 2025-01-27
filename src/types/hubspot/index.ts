@@ -50,7 +50,10 @@ export type HubSpotAPIListResponse<T> = {
   results: T;
   total: number;
   paging: {
-    next: string;
+    next: {
+      after: string;
+      [key: string]: string;
+    };
     prev: string;
   };
 };

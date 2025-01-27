@@ -2,20 +2,24 @@ import { cva, VariantProps } from 'class-variance-authority';
 import React, { useEffect } from 'react';
 import { Button } from './button';
 import { XIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-const DialogVariants = cva('native-dialog border p-4', {
-  variants: {
-    variant: {
-      default: '',
-      small: 'w-full max-w-sm',
-      medium: 'w-full max-w-md',
-      large: 'w-full max-w-2xl',
+const DialogVariants = cva(
+  'native-dialog border p-4 transition-all ease-in-out',
+  {
+    variants: {
+      variant: {
+        default: '',
+        small: 'w-full max-w-sm',
+        medium: 'w-full max-w-md',
+        large: 'w-full max-w-2xl',
+      },
     },
-  },
-  defaultVariants: {
-    variant: 'default',
-  },
-});
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
 export interface DialogProps {
   open: boolean;
   onClose: () => void;
@@ -65,7 +69,10 @@ const NativeDialog = React.forwardRef<
 
   return (
     <dialog
-      className={DialogVariants({ variant, className })}
+      className={cn(DialogVariants({ variant, className }), {
+        'y-0': open,
+        'y-130': !open,
+      })}
       onClose={onClose}
       ref={ref}
       {...props}
@@ -78,7 +85,7 @@ const NativeDialog = React.forwardRef<
           variant='outline'
           onClick={onClose}
           type='button'
-          className='dialog-close'
+          className='dialog-close z-[9999]'
         >
           <XIcon className='dialog-close-icon' />
         </Button>

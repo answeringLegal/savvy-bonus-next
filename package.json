@@ -3,10 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node initdb.js && next dev",
+    "dev": "next dev -p 3002",
     "dev:https": "next dev --experimental-https",
-    "build": "node initdb.js && next build",
-    "start": "node initdb.js && next start",
+    "build": "next build",
+    "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
@@ -73,6 +73,7 @@
     "eslint-config-next": "14.2.3",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
+    "tailwindcss-motion": "^1.0.1",
     "typescript": "^5"
   }
 }

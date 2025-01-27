@@ -21,7 +21,7 @@ export async function GET(
     const response = await hubspotAPI.get<HubSpotAPIListResponse<HubSpotOwner>>(
       '/owners/' + params.id + '?idProperty=id'
     );
-    console.log('response back from hubspot ', response);
+    // console.log('response back from hubspot ', response);
     if (response.status === 200) {
       return Response.json(response.data, {
         status: response.status,
