@@ -61,9 +61,11 @@ const MoneyPit = forwardRef<MoneyPitHandle, MoneyPitProps>(
       });
 
       // Create walls
-      const wallOptions = {
+      const wallOptions: Matter.IChamferableBodyDefinition = {
         isStatic: true,
         render: { fillStyle: '#1e2942' },
+        restitution: 0.5,
+        friction: 0.05,
       };
 
       const addWalls = () => {

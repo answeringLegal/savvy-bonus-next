@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { formatMoney } from '@/lib/utils';
 import { endOfQuarter, format, startOfQuarter } from 'date-fns';
@@ -14,6 +14,7 @@ import { ACCOUNT_VALUE, MAX_PARTICIPANTS } from '@/config';
 import { SalesProgressCard } from './salesman-card-progress';
 import WebhookListener from './salesman-webhook-listener';
 import { FlowBiteModal } from './ui/flowbite-modal';
+import MoneyPit, { MoneyPitHandle } from './money-pit';
 
 const quarterStart = format(startOfQuarter(new Date()), 'yyyy-MM-dd');
 const quarterEnd = format(endOfQuarter(new Date()), 'yyyy-MM-dd');
@@ -29,6 +30,17 @@ export default function LiveBonusBlast() {
 
   const { data: dealsToday, isLoading: loadingDealsToday } =
     useFetchTodayDeals();
+
+  const moneyPitRef = useRef<MoneyPitHandle>(null);
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     const newAccounts = Math.floor(Math.random() * 5);
+  //     moneyPitRef.current?.addElements(newAccounts);
+  //   }, 5000);
+
+  //   return () => clearInterval(interval);
+  // }, []);
 
   // an effect to change salesmenView to all after 10 seconds
   useEffect(() => {
@@ -73,7 +85,11 @@ export default function LiveBonusBlast() {
   );
   return (
     <>
-      <WebhookListener />
+      <WebhookListener
+        onNewDeal={(deal) => {
+          moneyPitRef.current?.addElements(2);
+        }}
+      />
       {/* <FlowBiteModal /> */}
       <div className='flex flex-col h-full live-event'>
         <div
@@ -103,7 +119,7 @@ export default function LiveBonusBlast() {
             <span className='spacer mx-20'>🎉</span>
           </Marquee>
         )}
-        <header className='my-16'>
+        <header className='my-16 sm:my-8'>
           <QuarterIntervalDuration />
         </header>
         {/* All Sales */}
@@ -178,29 +194,17 @@ export default function LiveBonusBlast() {
             </AnimatePresence>
           </motion.div>
           <div className='col-span-2 space-y-4 relative flex flex-col'>
-            <div className='bg-accent p-4 rounded-md shadow-lg flex flex-col gap-4 items-center'>
-              <span className='font-light text-lg uppercase'>
-                (Potential)Bonus Pool
-              </span>
-              <h2 className='text-6xl font-extrabold text-primary flex items-center gap-4'>
-                {formatMoney(ACCOUNT_VALUE * total_paid_accounts)}
-              </h2>
-              <span className='font-light text-lg uppercase text-foreground/70'>
-                {total_paid_accounts} Sales
-              </span>
-            </div>
             <div className='text-center'>
               <h3
                 className='font-extrabold text-foreground text-4xl uppercase drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]
 '
+                style={{ textShadow: '2px 5.2px 1.2px hsl(var(--accent))' }}
               >
                 Bonus Blast
               </h3>
               <h3
                 className='font-extrabold text-foreground text-4xl uppercase'
-                style={{
-                  textShadow: '2px 5.2px 1.2px hsl(var(--primary))',
-                }}
+                style={{ textShadow: '2px 5.2px 1.2px hsl(var(--accent))' }}
               >
                 {format(new Date(), 'QQQ y')}
               </h3>
@@ -211,6 +215,22 @@ export default function LiveBonusBlast() {
                 {format(endOfQuarter(new Date()), 'MMM dd')}
               </p>
             </div>
+            {/* <div className='bg-accent p-4 shadow-lg flex flex-col gap-4 items-center flex-1 rounded-b-full rounded-t-lg'>
+              <span className='font-light text-lg uppercase'>
+                (Potential) Bonus Pool
+              </span>
+              <h2 className='text-6xl font-extrabold text-primary flex items-center gap-4'>
+                {formatMoney(ACCOUNT_VALUE * total_paid_accounts)}
+              </h2>
+              <span className='font-light text-lg uppercase text-foreground/70'>
+                {total_paid_accounts} Sales
+              </span>
+            </div> */}
+            <MoneyPit
+              ref={moneyPitRef}
+              initialPaidAccounts={50}
+              elementSize={30}
+            />
           </div>
         </div>
       </div>

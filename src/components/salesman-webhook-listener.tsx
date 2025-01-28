@@ -24,7 +24,14 @@ interface WebhookEvent {
   } | null;
 }
 
-export default function WebhookListener() {
+interface WebhookListenerProps {
+  onNewDeal?: (deal: WebhookEvent) => void;
+  onNewDealError?: (e: Event) => void;
+}
+export default function WebhookListener({
+  onNewDeal,
+  onNewDealError,
+}: WebhookListenerProps) {
   const [messages, setMessages] = useState<WebhookEvent[]>([]);
   const [showNewDealAlert, setShowNewDealAlert] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<WebhookEvent | null>(null);
@@ -43,6 +50,7 @@ export default function WebhookListener() {
       if (newDeal) {
         setSelectedDeal(newDeal);
         setShowNewDealAlert(true);
+        onNewDeal?.(newDeal);
         setTimeout(() => {
           setShowNewDealAlert(false);
         }, 5000);
@@ -53,6 +61,8 @@ export default function WebhookListener() {
 
     eventSource.onerror = (error) => {
       console.error('EventSource failed:', error);
+      onNewDealError?.(error);
+
       eventSource.close();
     };
 

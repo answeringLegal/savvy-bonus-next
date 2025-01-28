@@ -44,13 +44,15 @@ export const SalesProgressCard = ({
           <DealProgressBar
             progress={completed}
             label={`${deals.completed} Bonus`}
-            className='bg-primary'
+            className='bg-primary rounded-l-lg'
+            popoverLabel='Qualified'
           />
           <DealProgressBar
             progress={pending}
             label={`${deals.pending} Sales`}
-            className='bg-blue-500/30 progress-striped progress-animated'
+            className='bg-blue-500/30 progress-striped progress-animated rounded-r-lg'
             labelClassName='text-foreground'
+            popoverLabel='Pending'
           />
         </DealProgress>
       </div>
@@ -63,6 +65,7 @@ interface DealProgressProps extends React.ComponentProps<'div'> {}
 interface DealProgressBarProps extends React.ComponentProps<'div'> {
   progress: number;
   label?: string;
+  popoverLabel?: string;
   labelClassName?: string;
 }
 
@@ -70,16 +73,19 @@ const DealProgressBar = ({
   className,
   progress,
   label,
+  popoverLabel,
   ...props
 }: DealProgressBarProps) => {
   return (
     <div
-      className={cn('h-full  transition-all duration-1000 relative', className)}
+      className={cn('h-full transition-all duration-1000 relative', className)}
       style={{
         width: `${progress}%`,
       }}
+      data-tooltip-target='tooltip-default'
       {...props}
     >
+      {/* label */}
       {label && (
         <span
           className={cn(
@@ -93,6 +99,23 @@ const DealProgressBar = ({
           {label}
         </span>
       )}
+      {/* popover */}
+      {popoverLabel && (
+        <div className='absolute inset-0 bg-foreground px-2 h-fit mt-8 w-fit rounded-lg left-1/2 -translate-x-1/2 '>
+          <div
+            className='bg-foreground w-2 h-2'
+            style={{
+              position: 'absolute',
+              top: '-4px',
+              left: '50%',
+              transform: 'translateX(-50%) rotate(45deg)',
+            }}
+          ></div>
+          <span className='text-xs truncate text-background'>
+            {popoverLabel}
+          </span>
+        </div>
+      )}
     </div>
   );
 };
@@ -103,7 +126,7 @@ const DealProgress = ({ className, ...props }: DealProgressProps) => {
   return (
     <div
       className={cn(
-        'h-6 bg-background/50 backdrop-blur-lg w-full flex items-center rounded-full overflow-hidden shadow-sm',
+        'h-6 bg-background/50 backdrop-blur-lg w-full flex items-center rounded-full shadow-sm',
         className
       )}
       {...props}

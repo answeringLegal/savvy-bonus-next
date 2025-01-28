@@ -57,7 +57,7 @@ export default async function RootLayout({
       <body className={font.className}>
         <ReactQueryProvider>
           <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
-            {/* {!(await isAuthenticated()) ? (
+            {!(await isAuthenticated()) ? (
               <main className='auth grid h-screen w-screen sm:grid-cols-2'>
                 <section className='auth-content col-span-1 flex flex-col items-center justify-center p-8 shadow-lg'>
                   <div className='auth-content-center'>
@@ -85,20 +85,20 @@ export default async function RootLayout({
                 </section>
                 <div className='relative col-span-1 hidden select-none overflow-hidden rounded-l-3xl bg-gradient-to-r from-primary/5 to-background sm:block'></div>
               </main>
-            ) : ( */}
-            <main className='app flex h-[100dvh] flex-col overflow-y-hidden'>
-              {/* <div className='fixed top-4 right-4 z-50'>
-                <Link href='/settings'>
-                  <Button variant='outline' size={'icon'}>
-                    <CogIcon className='size-4' />
-                  </Button>
-                </Link>
-              </div> */}
-              <section className='app-content flex flex-col relative flex-1'>
-                {children}
-              </section>
-            </main>
-            {/* )} */}
+            ) : (
+              <main className='app flex h-[100dvh] flex-col overflow-y-hidden'>
+                <div className='fixed top-4 right-4 z-50'>
+                  <Link href='/settings'>
+                    <Button variant='outline' size={'icon'}>
+                      <CogIcon className='size-4' />
+                    </Button>
+                  </Link>
+                </div>
+                <section className='app-content flex flex-col relative flex-1'>
+                  {children}
+                </section>
+              </main>
+            )}
             <Toaster richColors />
           </ThemeProvider>
         </ReactQueryProvider>
