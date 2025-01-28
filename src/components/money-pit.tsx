@@ -19,7 +19,7 @@ export interface MoneyPitHandle {
   setTotalPaidAccounts: (count: number) => void;
 }
 
-const ELEMENT_SIZE = 40;
+const ELEMENT_SIZE = 80; // Increase size to represent bills better
 
 const MoneyPit = forwardRef<MoneyPitHandle, MoneyPitProps>(
   ({ initialPaidAccounts, elementSize = ELEMENT_SIZE }, ref) => {
@@ -129,33 +129,36 @@ const MoneyPit = forwardRef<MoneyPitHandle, MoneyPitProps>(
       if (!canvasRef.current) return;
 
       const canvas = canvasRef.current;
-      const element = Matter.Bodies.circle(
+      const element = createBillElement(
         Math.random() * canvas.width,
         -elementSize,
-        elementSize / 2,
-        {
-          restitution: 0.5,
-          friction: 0.1,
-          render: {
-            fillStyle: getRandomColor(),
-          },
-        }
+        elementSize
       );
 
       Matter.Composite.add(engine.world, element);
       setElementCount((prev) => prev + 1);
     };
 
-    const getRandomColor = () => {
-      const colors = [
-        '#FFD700',
-        '#C0C0C0',
-        '#B87333',
-        '#4CAF50',
-        '#2196F3',
-        '#9C27B0',
-      ];
-      return colors[Math.floor(Math.random() * colors.length)];
+    // **Creates a Bill Instead of a Coin**
+    const createBillElement = (x: number, y: number, size: number) => {
+      return Matter.Bodies.rectangle(
+        x,
+        y,
+        size * 2, // Longer width for bills
+        size / 2, // Shorter height for bills
+        {
+          render: {
+            sprite: {
+              texture: '/stack.png', // sprite image
+              xScale: 0.2,
+              yScale: 0.2,
+            },
+          },
+          angle: Math.random() * Math.PI, // Random rotation for realism
+          restitution: 0.3, // how Bouncy
+          friction: 0.8, // how Slippery
+        }
+      );
     };
 
     useImperativeHandle(ref, () => ({
@@ -174,10 +177,9 @@ const MoneyPit = forwardRef<MoneyPitHandle, MoneyPitProps>(
 
     return (
       <div className='flex flex-col items-center space-y-4 p-4'>
-        {/* <h1 className='text-2xl font-bold'>Money Pit Visualization</h1> */}
         <div
           ref={containerRef}
-          className='w-full h-[600px]  rounded-b-2xl overflow-hidden'
+          className='w-full h-[600px] rounded-b-2xl overflow-hidden'
         >
           <canvas ref={canvasRef} />
         </div>
