@@ -191,4 +191,5 @@ const MoneyPit = forwardRef<MoneyPitHandle, MoneyPitProps>(
   }
 );
 
+MoneyPit.displayName = 'MoneyPit';
 export default MoneyPit;
