@@ -13,6 +13,9 @@ import { ThemeProvider } from 'next-themes';
 import { config } from '@/site/config';
 import Link from 'next/link';
 import { CogIcon } from 'lucide-react';
+import { BackgroundLines } from '@/components/layout-background';
+import Image from 'next/image';
+import { Logo } from '@/components/logo';
 
 const font = Lexend({
   subsets: ['latin'],
@@ -58,12 +61,13 @@ export default async function RootLayout({
         <ReactQueryProvider>
           <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
             {!(await isAuthenticated()) ? (
-              <main className='auth grid h-screen w-screen sm:grid-cols-2'>
-                <section className='auth-content col-span-1 flex flex-col items-center justify-center p-8 shadow-lg'>
-                  <div className='auth-content-center'>
+              <main className='auth relative'>
+                <Logo />
+                <BackgroundLines className='flex  w-full flex-col px-4 -z-10 bg-background'>
+                  <section className='auth-content-center p-8 rounded-3xl sm:w-[400px] w-full mx-auto mt-[calc(50vh-200px)] z-10 bg-accent/20 backdrop-blur-md border border-accent/200 text-center'>
                     <div className='text mb-16'>
                       <small>Welcome to </small>
-                      <h2 className='text-2xl font-bold leading-10'>
+                      <h2 className='text-4xl font-bold leading-10'>
                         {config.name}
                       </h2>
                       <p className='mt-2 text-sm text-foreground/70'>
@@ -74,22 +78,15 @@ export default async function RootLayout({
                       <LoginLink className='btn'>
                         <Button className='block w-full'>Login</Button>
                       </LoginLink>
-                      <p className='text-center text-sm'>or</p>
-                      <RegisterLink>
-                        <Button variant='outline' className='block w-full'>
-                          Register
-                        </Button>
-                      </RegisterLink>
                     </div>
-                  </div>
-                </section>
-                <div className='relative col-span-1 hidden select-none overflow-hidden rounded-l-3xl bg-gradient-to-r from-primary/5 to-background sm:block'></div>
+                  </section>
+                </BackgroundLines>
               </main>
             ) : (
               <main className='app flex h-[100dvh] flex-col overflow-y-hidden'>
-                <div className='fixed top-4 right-4 z-50'>
+                <div className='fixed bottom-4 right-4 z-50'>
                   <Link href='/settings'>
-                    <Button variant='outline' size={'icon'}>
+                    <Button variant='secondary' size={'icon'}>
                       <CogIcon className='size-4' />
                     </Button>
                   </Link>

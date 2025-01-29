@@ -228,7 +228,7 @@ export default function LiveBonusBlast() {
             </div> */}
             <MoneyPit
               ref={moneyPitRef}
-              initialPaidAccounts={50}
+              initialPaidAccounts={total_paid_accounts}
               elementSize={30}
             />
           </div>

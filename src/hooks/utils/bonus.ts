@@ -1,4 +1,4 @@
-export function getSalemanBonus(totalPool: number, place: number) {
+export function getSalesmanBonus(totalPool: number, place: number) {
   switch (place) {
     case 1:
       return totalPool * 0.3;

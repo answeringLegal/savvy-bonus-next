@@ -104,6 +104,19 @@ const MoneyPit = forwardRef<MoneyPitHandle, MoneyPitProps>(
       Matter.Runner.run(runner, engine);
       Matter.Render.run(render);
 
+      // **Mouse Control (Allow Dragging Objects)**
+      const mouse = Matter.Mouse.create(render.canvas);
+      const mouseConstraint = Matter.MouseConstraint.create(engine, {
+        mouse: mouse,
+        constraint: {
+          stiffness: 0.2,
+          render: { visible: false },
+        },
+      });
+
+      Matter.Composite.add(engine.world, mouseConstraint);
+      render.mouse = mouse;
+
       // Handle window resize
       const handleResize = () => {
         updateCanvasSize();

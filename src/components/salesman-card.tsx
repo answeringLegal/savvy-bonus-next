@@ -2,7 +2,7 @@ import { formatMoney } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import ordinal from 'ordinal';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { getSalemanBonus } from '@/hooks/utils/bonus';
+import { getSalesmanBonus } from '@/hooks/utils/bonus';
 import { AnimatedCard } from './animated-card';
 interface Salesman {
   name: string;
@@ -50,7 +50,7 @@ export const SalesmanCard: React.FC<SalesmanCardProps> = ({
       </div>
 
       <div className='prize ml-auto font-extrabold text-primary text-3xl'>
-        {formatMoney(getSalemanBonus(salesman.prize, props.place))}
+        {formatMoney(getSalesmanBonus(salesman.prize, props.place))}
       </div>
     </AnimatedCard>
   );

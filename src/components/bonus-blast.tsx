@@ -19,7 +19,7 @@ import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import Image from 'next/image';
 import { NativeDialog } from './ui/native-dialog';
 import { ACCOUNT_VALUE, MAX_PARTICIPANTS } from '@/config';
-import { getSalemanBonus } from '@/hooks/utils/bonus';
+import { getSalesmanBonus } from '@/hooks/utils/bonus';
 
 const quarterStart = format(
   startOfQuarter(subQuarters(new Date(), 1)),
@@ -169,7 +169,7 @@ export default function BonusBlast() {
                   }}
                   key={salesman.place}
                   salesman={salesman}
-                  bonus={getSalemanBonus(
+                  bonus={getSalesmanBonus(
                     total_paid_accounts * ACCOUNT_VALUE,
                     salesman.place
                   )}
