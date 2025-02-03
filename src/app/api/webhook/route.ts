@@ -36,6 +36,12 @@ export async function POST(req: Request) {
       console.log('Processing Event:', event);
       if (event.subscriptionType === 'deal.creation') {
         const deal = await fetchHubSpotDeal(event.objectId);
+        console.log('deal', deal);
+        console.log('deal pipeline', deal.properties.pipeline);
+        console.log(
+          'isDealInPipeline',
+          deal.properties.pipeline === '137772405'
+        );
 
         // Ensure deal exists and check pipeline
         if (deal && deal.properties.pipeline === '137772405') {

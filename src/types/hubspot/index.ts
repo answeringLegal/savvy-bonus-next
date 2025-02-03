@@ -6,6 +6,7 @@ export type HubSpotDeal = {
     hs_lastmodifieddate: string;
     hs_object_id: string;
     hubspot_owner_id: string;
+    dealname: string;
     [key: string]: string;
   };
   createdAt: string;

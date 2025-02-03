@@ -215,7 +215,7 @@ export default function LiveBonusBlast() {
                 {format(endOfQuarter(new Date()), 'MMM dd')}
               </p>
             </div>
-            {/* <div className='bg-accent p-4 shadow-lg flex flex-col gap-4 items-center flex-1 rounded-b-full rounded-t-lg'>
+            <div className='p-4 flex flex-col gap-4 items-center'>
               <span className='font-light text-lg uppercase'>
                 (Potential) Bonus Pool
               </span>
@@ -225,7 +225,7 @@ export default function LiveBonusBlast() {
               <span className='font-light text-lg uppercase text-foreground/70'>
                 {total_paid_accounts} Sales
               </span>
-            </div> */}
+            </div>
             <MoneyPit
               ref={moneyPitRef}
               initialPaidAccounts={total_paid_accounts}

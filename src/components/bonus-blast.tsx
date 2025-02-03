@@ -20,6 +20,8 @@ import Image from 'next/image';
 import { NativeDialog } from './ui/native-dialog';
 import { ACCOUNT_VALUE, MAX_PARTICIPANTS } from '@/config';
 import { getSalesmanBonus } from '@/hooks/utils/bonus';
+import { Button } from './ui/button';
+import { DownloadCloud } from 'lucide-react';
 
 const quarterStart = format(
   startOfQuarter(subQuarters(new Date(), 1)),
@@ -70,6 +72,43 @@ export default function BonusBlast() {
     (acc, deals) => acc + deals?.length || 0,
     0
   );
+
+  function downloadResultsAsCSV() {
+    if (!data)
+      return [['Salesman', 'DealName', 'PaidDate', 'CreateDate', 'DealID']];
+
+    const csvContent = [
+      ['Salesman', 'DealName', 'PaidDate', 'CreateDate', 'DealID'],
+      ...Object.entries(data)
+        .map(([owner, deals]) => {
+          return {
+            owner,
+            deals,
+          };
+        })
+        .flatMap((salesman) =>
+          salesman.deals.map((deal) => [
+            salesman.owner,
+            JSON.stringify(deal.properties.dealname),
+            deal.properties.date_paid,
+            deal.properties.createdate,
+            deal.properties.hs_object_id,
+          ])
+        ),
+    ]
+      .map((e) => e.join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'bonus_blast_results.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
   return (
     <div className='flex flex-col h-full'>
@@ -268,6 +307,14 @@ export default function BonusBlast() {
           flex: 1,
         }}
       >
+        <Button
+          title='Download Full Results as CSV'
+          size={'icon'}
+          className='fixed right-4 bottom-16 z-50'
+          onClick={downloadResultsAsCSV}
+        >
+          <DownloadCloud className='size-4' />
+        </Button>
         <motion.div
           className='col-span-4 space-y-4 overflow-y-auto no-scrollbar flex flex-col'
           initial='hidden'

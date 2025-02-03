@@ -198,7 +198,6 @@ const MoneyPit = forwardRef<MoneyPitHandle, MoneyPitProps>(
         >
           <canvas ref={canvasRef} />
         </div>
-        <div>Elements: {elementCount}</div>
       </div>
     );
   }

@@ -112,7 +112,7 @@ const useQualifyingDeals = () => {
           },
         ],
         limit: '10',
-        properties: ['date_paid', 'hubspot_owner_id', 'deal_name'],
+        properties: ['date_paid', 'hubspot_owner_id', 'dealname'],
         isPaidDeal: true,
       };
       const response = await fetch('/api/hubspot/deals/search', {
@@ -185,7 +185,7 @@ const useFetchLiveQualifyingDeals = ({
         ],
         isPaidDeal: false,
         limit: '200',
-        properties: ['date_paid', 'hubspot_owner_id', 'deal_name'],
+        properties: ['date_paid', 'hubspot_owner_id', 'dealname'],
       };
       const response = await fetch('/api/hubspot/deals', {
         method: 'POST',
@@ -253,7 +253,7 @@ const useFetchQualifyingDeals = ({
           },
         ],
         limit: '200',
-        properties: ['date_paid', 'hubspot_owner_id', 'deal_name'],
+        properties: ['date_paid', 'hubspot_owner_id', 'dealname'],
         isPaidDeal: true,
       };
       const response = await fetch('/api/hubspot/deals', {
@@ -299,7 +299,7 @@ const useFetchTodayDeals = () => {
           },
         ],
         limit: '20',
-        properties: ['date_paid', 'hubspot_owner_id', 'deal_name'],
+        properties: ['date_paid', 'hubspot_owner_id', 'dealname'],
         isPaid: false,
       };
       const response = await fetch('/api/hubspot/deals', {
