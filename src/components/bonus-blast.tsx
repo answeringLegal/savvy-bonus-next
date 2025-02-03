@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { formatMoney } from '@/lib/utils';
+import { cn, formatMoney } from '@/lib/utils';
 import {
   addDays,
   endOfQuarter,
@@ -22,6 +22,7 @@ import { ACCOUNT_VALUE, MAX_PARTICIPANTS } from '@/config';
 import { getSalesmanBonus } from '@/hooks/utils/bonus';
 import { Button } from './ui/button';
 import { DownloadCloud } from 'lucide-react';
+import { config } from '../site/config';
 
 const quarterStart = format(
   startOfQuarter(subQuarters(new Date(), 1)),
@@ -110,6 +111,9 @@ export default function BonusBlast() {
     document.body.removeChild(link);
   }
 
+  const isGameEnded =
+    new Date() > addDays(endOfQuarter(subQuarters(new Date(), 1)), 30);
+
   return (
     <div className='flex flex-col h-full'>
       <div
@@ -124,33 +128,59 @@ export default function BonusBlast() {
         absolute
         z-[-1] animate-fade-in'
       ></div>
-      {/* <DotLottieReact
-        className='absolute top-0 left-0 w-full h-full'
-        src='https://lottie.host/f7e6efe7-8a03-4627-9c33-0fb6e10f0fe2/OEzLw7vXwg.lottie'
-        loop
-        autoplay
-      />
-      <motion.div>
-        <DotLottieReact
-          src='https://lottie.host/9d5da2d1-ee84-43e9-86b2-625bc13dc80b/9LQgVAlIgk.lottie'
-          autoplay
-        />
-
+      {isGameEnded && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 1.5 }}
+          className='winner-announcement absolute inset-0 flex flex-col items-center justify-center bg-black/10 backdrop-blur-xl z-50'
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 0, display: 'none' }}
+          transition={{ duration: 0.5, delay: 6 }}
         >
-          <h1 className='text-6xl font-extrabold text-primary text-center'>
-            {salesmenPodium[1].owner}
-          </h1>
-          <h2 className='text-2xl font-extrabold text-primary text-center'>
-            Wins the Bonus Blast For{' '}
-            {format(subQuarters(new Date(), 1), 'QQQ y')}
-          </h2>
+          <DotLottieReact
+            className='absolute top-0 left-0 w-full h-full -z-[1]'
+            style={{
+              objectFit: 'cover',
+              height: '100dvh',
+              width: '100dvw',
+            }}
+            src='https://lottie.host/f7e6efe7-8a03-4627-9c33-0fb6e10f0fe2/OEzLw7vXwg.lottie'
+            loop
+            autoplay
+          />
+          <motion.div>
+            <motion.div
+              // fade away after 5 seconds
+              initial={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 0.2, y: -40, scale: 0.5 }}
+              transition={{ duration: 0.5, delay: 3 }}
+            >
+              <DotLottieReact
+                src='https://lottie.host/9d5da2d1-ee84-43e9-86b2-625bc13dc80b/9LQgVAlIgk.lottie'
+                autoplay
+              />
+            </motion.div>
+
+            <motion.div
+              className=''
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: -300 }}
+              transition={{ duration: 0.5, delay: 3 }}
+            >
+              <h1 className='text-6xl font-extrabold text-primary text-center'>
+                {salesmenPodium[1].owner}
+              </h1>
+              <h2 className='text-2xl font-extrabold text-primary text-center'>
+                Wins the {config.name} For{' '}
+                {format(subQuarters(new Date(), 1), 'QQQ y')}
+              </h2>
+            </motion.div>
+          </motion.div>
         </motion.div>
-      </motion.div> */}
-      <div className='text-center absolute top-4 right-4 z-50'>
+      )}
+      <div
+        className={cn('text-center absolute top-4 right-4 z-50', {
+          hidden: isGameEnded,
+        })}
+      >
         <p className='text-sm text-foreground/50'>Final Results Pending</p>
         {/* <h2 className='text-foreground/80 font-bold text-2xl'>
           {formatDistance(
@@ -366,7 +396,7 @@ export default function BonusBlast() {
               className='font-extrabold text-foreground text-4xl uppercase drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)]
 '
             >
-              Bonus Blast
+              Quarterly Jackpot
             </h3>
             <h3 className='font-extrabold text-foreground text-4xl uppercase'>
               {format(subQuarters(new Date(), 1), 'QQQ y')}
@@ -380,6 +410,19 @@ export default function BonusBlast() {
           </div>
         </div>
       </div>
+      {isGameEnded && (
+        <DotLottieReact
+          className='absolute top-0 left-0 w-full h-full -z-[1]'
+          style={{
+            objectFit: 'cover',
+            height: '100dvh',
+            width: '100dvw',
+          }}
+          src='https://lottie.host/f7e6efe7-8a03-4627-9c33-0fb6e10f0fe2/OEzLw7vXwg.lottie'
+          loop
+          autoplay
+        />
+      )}
     </div>
   );
 }
