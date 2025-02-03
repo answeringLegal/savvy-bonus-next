@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
       }
 
       const keepAlive = setInterval(() => {
-        send([{ ping: 'keep-alive' }]);
+        send({ ping: 'keep-alive' });
       }, 25000); // Prevents Vercel from closing the connection
 
       req.signal.addEventListener('abort', () => {
