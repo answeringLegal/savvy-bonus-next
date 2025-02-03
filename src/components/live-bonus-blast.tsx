@@ -15,6 +15,7 @@ import { SalesProgressCard } from './salesman-card-progress';
 import WebhookListener from './salesman-webhook-listener';
 import { FlowBiteModal } from './ui/flowbite-modal';
 import MoneyPit, { MoneyPitHandle } from './money-pit';
+import { config } from '@/site/config';
 
 const quarterStart = format(startOfQuarter(new Date()), 'yyyy-MM-dd');
 const quarterEnd = format(endOfQuarter(new Date()), 'yyyy-MM-dd');
@@ -200,7 +201,7 @@ export default function LiveBonusBlast() {
 '
                 style={{ textShadow: '2px 5.2px 1.2px hsl(var(--accent))' }}
               >
-                Bonus Blast
+                {config.name}
               </h3>
               <h3
                 className='font-extrabold text-foreground text-4xl uppercase'

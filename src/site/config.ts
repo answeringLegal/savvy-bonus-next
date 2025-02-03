@@ -1,4 +1,4 @@
 export const config = {
-  name: 'Bonus Blast',
+  name: 'Quarterly Jackpot',
   description: '🎰',
 };
