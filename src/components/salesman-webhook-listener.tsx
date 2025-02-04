@@ -1,86 +1,28 @@
-import { HSEvent } from '@/app/api/webhook/route';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
 import { NativeDialog } from './ui/native-dialog';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import AutoPlayAudio from './salesman-audio-player';
 import { Fireworks } from './ui/fireworks';
-
-interface WebhookEvent {
-  event: HSEvent;
-  deal: {
-    properties: {
-      dealname: string;
-      pipeline: string;
-      dealstage: string;
-      createddate: string;
-      closedate?: string;
-    };
-  };
-  owner: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  } | null;
-}
+import useWebhookPolling, { WebhookEvent } from '@/hooks/useWebhookPolling';
+import { useState } from 'react';
 
 interface WebhookListenerProps {
   onNewDeal?: (deal: WebhookEvent) => void;
-  onNewDealError?: (e: Event) => void;
+  onNewDealError?: (e: Error) => void;
 }
 export default function WebhookListener({
   onNewDeal,
   onNewDealError,
 }: WebhookListenerProps) {
-  const [messages, setMessages] = useState<WebhookEvent[]>([]);
-  const [showNewDealAlert, setShowNewDealAlert] = useState(false);
-  const [selectedDeal, setSelectedDeal] = useState<WebhookEvent | null>(null);
-
-  useEffect(() => {
-    const eventSource = new EventSource('/api/webhook');
-
-    eventSource.onmessage = (event) => {
-      console.log('Webhook Event:', event.data);
-      const parsedData = JSON.parse(event.data) as WebhookEvent[];
-
-      // Show new deal alert if any of the events is a "deal.creation"
-      const newDeal = parsedData.find(
-        (msg) => msg.event.subscriptionType === 'deal.creation'
-      );
-      if (newDeal) {
-        setSelectedDeal(newDeal);
-        setShowNewDealAlert(true);
-        onNewDeal?.(newDeal);
-        setTimeout(() => {
-          setShowNewDealAlert(false);
-        }, 5000);
-      }
-
-      setMessages((prev) => [...prev, ...parsedData]);
-    };
-
-    eventSource.onerror = (error) => {
-      console.error('EventSource failed:', error);
-      onNewDealError?.(error);
-
-      eventSource.close();
-    };
-
-    return () => {
-      eventSource.close();
-    };
-  }, []);
-
-  useEffect(() => {
-    // remove messages after 5 seconds
-    const timer = setTimeout(() => {
-      setMessages((prev) => prev.slice(1));
-    }, 5000);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [messages]);
+  const messages = useWebhookPolling(
+    (deal) => {
+      onNewDeal?.(deal);
+    },
+    (e) => {
+      onNewDealError?.(e);
+    }
+  );
+  const [selectedDeal, setSelectedDeal] = useState(null);
 
   return (
     <AnimatePresence>
@@ -89,9 +31,7 @@ export default function WebhookListener({
           key={i}
           className='no-scrollbar overflow-hidden'
           title='New Deal Created'
-          onClose={() => {
-            console.log('closing dialog');
-          }}
+          onClose={() => console.log('closing dialog')}
           open={true}
           variant={'large'}
         >
@@ -105,7 +45,6 @@ export default function WebhookListener({
               initial={{ scale: 0, y: 100 }}
               animate={{
                 scale: 1,
-
                 y: 0,
                 transition: { duration: 0.2, delay: 0.7 },
               }}
@@ -126,7 +65,6 @@ export default function WebhookListener({
           <Fireworks />
         </NativeDialog>
       ))}
-      {/* </ul> */}
     </AnimatePresence>
   );
 }
