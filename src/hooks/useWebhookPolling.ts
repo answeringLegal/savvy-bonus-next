@@ -33,7 +33,7 @@ export default function useWebhookPolling(
       try {
         const response = await fetch('/api/webhook');
         if (!response.ok) throw new Error('Failed to fetch webhook events');
-        const data = await response.json();
+        const data = (await response.json()) as WebhookEvent[];
 
         if (data.length > 0) {
           console.log('Webhook Event:', data);
@@ -72,7 +72,6 @@ export default function useWebhookPolling(
   //   return () => clearTimeout(timer);
   // }, [messages]);
   useEffect(() => {
-    // remove messages after 5 seconds
     const timer = setTimeout(() => {
       setMessages((prev) => prev.slice(1));
     }, 5000);

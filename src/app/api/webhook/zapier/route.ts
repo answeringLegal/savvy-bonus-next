@@ -3,6 +3,23 @@ import { writeFile } from 'fs/promises';
 import path from 'path';
 import { parse } from 'papaparse';
 
+interface COPayment {
+  'Customer #': string;
+  Customer: string;
+  'State/Province': string;
+  LTV: string;
+  Created: string;
+  'First Payment': string;
+  Status: string;
+  'Invoice ID #': string;
+  'Invoice Date': string;
+  Total: string;
+  'Next Invoice': string;
+  'Last Invoice Date': string;
+  'Cancelled On': string;
+  'Admin User': string;
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Parse the incoming form data
@@ -19,10 +36,14 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
 
     // convert to json
-    const parsedData = parse(buffer.toString(), {
+    const parsedData = parse<COPayment[]>(buffer.toString(), {
       header: true,
       skipEmptyLines: true,
     });
+
+    // Write the file to disk in public folder
+    const filePath = path.join(process.cwd(), 'public', file.name);
+    await writeFile(filePath, buffer.toString());
 
     // Return success response with file details
     return NextResponse.json(
