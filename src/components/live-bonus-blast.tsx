@@ -16,7 +16,6 @@ import WebhookListener from './salesman-webhook-listener';
 import { FlowBiteModal } from './ui/flowbite-modal';
 import MoneyPit, { MoneyPitHandle } from './money-pit';
 import { config } from '@/site/config';
-import json from '../../public/data.json';
 
 const quarterStart = format(startOfQuarter(new Date()), 'yyyy-MM-dd');
 const quarterEnd = format(endOfQuarter(new Date()), 'yyyy-MM-dd');
@@ -87,7 +86,6 @@ export default function LiveBonusBlast() {
   );
   return (
     <>
-      {json && json.length && <pre>{json?.length}</pre>}
       <WebhookListener
         onNewDeal={(deal) => {
           moneyPitRef.current?.addElements(2);

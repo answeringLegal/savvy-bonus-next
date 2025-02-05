@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
     });
 
     // Write the file to disk in public folder
-    const filePath = path.join(process.cwd(), 'public', 'data.json');
-    await writeFile(filePath, JSON.stringify(parsedData.data, null, 2));
+    // const filePath = path.join(process.cwd(), 'public', 'data.json');
+    // await writeFile(filePath, JSON.stringify(parsedData.data, null, 2));
 
     // Return success response with file details
     return NextResponse.json(

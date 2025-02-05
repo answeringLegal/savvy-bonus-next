@@ -1,23 +1,22 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-
-export interface GeneralSetting {
-  name:
-    | 'Theme'
-    | 'ACCOUNT_VALUE'
-    | 'MAX_PARTICIPANTS'
-    | 'PAGE_TIMER_SEC_LIVE'
-    | 'PAGE_TIMER_SEC_PAST';
-
-  value: string | number;
-  description?: string;
-  data_type?: 'number' | 'string' | 'boolean' | 'date';
-}
-
-export interface SplitSetting {
-  ordinal: number;
-  percentage: number;
-  description: string;
-}
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  QuerySnapshot,
+  updateDoc,
+} from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
+import {
+  GeneralSetting,
+  generalSettingConverter,
+  SplitSetting,
+  splitSettingConverter,
+} from '@/types/settings';
 
 export const GENERAL_SETTINGS_DATABASE_KEY = 'bonus_blast_general_settings';
 export const SPLIT_SETTINGS_KEY = 'bonus_blast_pool_split_settings';
@@ -105,55 +104,51 @@ const useGetSettings = () => {
   return useQuery<GeneralSetting[], Error>({
     queryKey: ['general_settings'],
     queryFn: async () => {
-      const settings = localStorage.getItem(GENERAL_SETTINGS_DATABASE_KEY);
-      if (!settings) {
-        localStorage.setItem(
-          GENERAL_SETTINGS_DATABASE_KEY,
-          JSON.stringify(DEFAULT_GENERAl_SETTINGS)
+      try {
+        const querySnapshot: QuerySnapshot<GeneralSetting> = await getDocs(
+          collection(db, 'general_settings').withConverter(
+            generalSettingConverter
+          )
         );
-        return DEFAULT_GENERAl_SETTINGS;
-      }
-
-      // return the settings
-      if (settings && settings.length === DEFAULT_GENERAl_SETTINGS.length) {
-        return JSON.parse(settings);
-      }
-
-      // merge the difference between the two
-      if (settings && settings.length !== DEFAULT_GENERAl_SETTINGS.length) {
-        const parsedSettings = JSON.parse(settings);
-        const newSettings = DEFAULT_GENERAl_SETTINGS.filter((setting) => {
-          return !parsedSettings.find(
-            (s: GeneralSetting) => s.name === setting.name
-          );
-        });
-
-        localStorage.setItem(
-          GENERAL_SETTINGS_DATABASE_KEY,
-          JSON.stringify([...parsedSettings, ...newSettings])
-        );
-
-        return [...parsedSettings, ...newSettings];
+        return querySnapshot.docs.map((doc) => doc.data());
+      } catch (error) {
+        console.error('Error getting general settings:', error);
+        throw new Error('Error getting general settings');
       }
     },
   });
 };
 
-const useGetSetting = (name: string) => {
-  return useQuery<GeneralSetting, Error>({
-    queryKey: ['setting', name],
+const useGetSettingByName = (name: string) => {
+  return useQuery<GeneralSetting | null, Error>({
+    queryKey: ['general_setting', name],
     queryFn: async () => {
-      const settings = localStorage.getItem(GENERAL_SETTINGS_DATABASE_KEY);
-      if (settings) {
-        const parsedSettings = JSON.parse(settings);
-        return parsedSettings.find(
-          (setting: GeneralSetting) => setting.name === name
-        );
-      }
-
-      return DEFAULT_GENERAl_SETTINGS.find(
-        (setting: GeneralSetting) => setting.name === name
+      const docRef = doc(db, 'general_settings', name).withConverter(
+        generalSettingConverter
       );
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return docSnap.data();
+      } else {
+        return null;
+      }
+    },
+  });
+};
+
+const useGetSetting = (id: string) => {
+  return useQuery<GeneralSetting, Error>({
+    queryKey: ['general_setting', id],
+    queryFn: async () => {
+      const docRef = doc(db, 'general_settings', id).withConverter(
+        generalSettingConverter
+      );
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        return docSnap.data();
+      } else {
+        throw new Error('Setting not found');
+      }
     },
   });
 };
@@ -162,28 +157,18 @@ const useAddSetting = () => {
   const queryClient = useQueryClient();
   return useMutation<Partial<GeneralSetting>, Error, Partial<GeneralSetting>>({
     mutationFn: async (setting) => {
-      const settings = localStorage.getItem(GENERAL_SETTINGS_DATABASE_KEY);
-      if (settings) {
-        const parsedSettings = JSON.parse(settings);
-        // force unique setting names
-        if (
-          parsedSettings.find((s: GeneralSetting) => s.name === setting.name)
-        ) {
-          throw new Error('Setting already exists');
-        }
-        parsedSettings.push(setting);
-        localStorage.setItem(
-          GENERAL_SETTINGS_DATABASE_KEY,
-          JSON.stringify(parsedSettings)
+      try {
+        const docRef = await addDoc(
+          collection(db, 'general_settings').withConverter(
+            generalSettingConverter
+          ),
+          setting
         );
-        return setting;
+        return { id: docRef.id, ...setting };
+      } catch (error) {
+        console.error('Error adding general setting:', error);
+        throw new Error('Error adding general setting');
       }
-
-      localStorage.setItem(
-        GENERAL_SETTINGS_DATABASE_KEY,
-        JSON.stringify([setting])
-      );
-      return setting;
     },
 
     onSuccess: () => {
@@ -198,22 +183,21 @@ const useUpdateSetting = () => {
   const queryClient = useQueryClient();
   return useMutation<Partial<GeneralSetting>, Error, Partial<GeneralSetting>>({
     mutationFn: async (setting) => {
-      const settings = localStorage.getItem(GENERAL_SETTINGS_DATABASE_KEY);
-      if (settings) {
-        const parsedSettings = JSON.parse(settings);
-
-        const index = parsedSettings.findIndex(
-          (s: GeneralSetting) => s.name === setting.name
-        );
-        parsedSettings[index] = setting;
-        localStorage.setItem(
-          GENERAL_SETTINGS_DATABASE_KEY,
-          JSON.stringify(parsedSettings)
-        );
-        return setting;
+      if (!setting.id) {
+        throw new Error('Setting ID is required for update');
       }
-
-      return setting;
+      try {
+        const docRef = doc(
+          db,
+          'general_settings',
+          setting.id as string
+        ).withConverter(generalSettingConverter);
+        await updateDoc(docRef, setting);
+        return setting;
+      } catch (error) {
+        console.error('Error updating general setting:', error);
+        throw new Error('Error updating general setting');
+      }
     },
 
     onSuccess: () => {
@@ -224,39 +208,32 @@ const useUpdateSetting = () => {
   });
 };
 
+const useDeleteSetting = () => {
+  const queryClient = useQueryClient();
+  return useMutation<string, Error, string>({
+    mutationFn: async (id) => {
+      await deleteDoc(doc(db, 'general_settings', id));
+      return id;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['general_settings'] });
+    },
+  });
+};
+
 const useGetSplitSettings = () => {
   return useQuery<SplitSetting[], Error>({
     queryKey: ['split_settings'],
     queryFn: async () => {
-      const settings = localStorage.getItem(SPLIT_SETTINGS_KEY);
-      if (!settings) {
-        localStorage.setItem(
-          SPLIT_SETTINGS_KEY,
-          JSON.stringify(DEFAULT_SPLIT_SETTINGS)
-        );
-        return DEFAULT_SPLIT_SETTINGS;
-      }
-
-      // return the settings
-      if (settings && settings.length === DEFAULT_SPLIT_SETTINGS.length) {
-        return JSON.parse(settings);
-      }
-
-      // merge the difference between the two
-      if (settings && settings.length !== DEFAULT_SPLIT_SETTINGS.length) {
-        const parsedSettings = JSON.parse(settings);
-        const newSettings = DEFAULT_SPLIT_SETTINGS.filter((setting) => {
-          return !parsedSettings.find(
-            (s: SplitSetting) => s.ordinal === setting.ordinal
-          );
-        });
-
-        localStorage.setItem(
-          SPLIT_SETTINGS_KEY,
-          JSON.stringify([...parsedSettings, ...newSettings])
+      try {
+        const querySnapshot: QuerySnapshot<SplitSetting> = await getDocs(
+          collection(db, 'split_settings').withConverter(splitSettingConverter)
         );
 
-        return [...parsedSettings, ...newSettings];
+        return querySnapshot.docs.map((doc) => doc.data());
+      } catch (error) {
+        console.error('Error getting split settings:', error);
+        throw new Error('Error getting split settings');
       }
     },
   });
@@ -266,27 +243,16 @@ const useAddSplitSetting = () => {
   const queryClient = useQueryClient();
   return useMutation<Partial<SplitSetting>, Error, Partial<SplitSetting>>({
     mutationFn: async (setting) => {
-      const settings = localStorage.getItem(SPLIT_SETTINGS_KEY);
-      if (settings) {
-        const parsedSettings = JSON.parse(settings);
-        // force unique setting names
-        if (
-          parsedSettings.find(
-            (s: SplitSetting) => s.ordinal === setting.ordinal
-          )
-        ) {
-          throw new Error('Setting already exists');
-        }
-        parsedSettings.push(setting);
-        localStorage.setItem(
-          SPLIT_SETTINGS_KEY,
-          JSON.stringify(parsedSettings)
+      try {
+        const docRef = await addDoc(
+          collection(db, 'split_settings').withConverter(splitSettingConverter),
+          setting
         );
-        return setting;
+        return { id: docRef.id, ...setting };
+      } catch (error) {
+        console.error('Error adding general setting:', error);
+        throw new Error('Error adding general setting');
       }
-
-      localStorage.setItem(SPLIT_SETTINGS_KEY, JSON.stringify([setting]));
-      return setting;
     },
 
     onSuccess: () => {
@@ -301,22 +267,21 @@ const useUpdateSplitSetting = () => {
   const queryClient = useQueryClient();
   return useMutation<Partial<SplitSetting>, Error, Partial<SplitSetting>>({
     mutationFn: async (setting) => {
-      const settings = localStorage.getItem(SPLIT_SETTINGS_KEY);
-      if (settings) {
-        const parsedSettings = JSON.parse(settings);
-
-        const index = parsedSettings.findIndex(
-          (s: SplitSetting) => s.ordinal === setting.ordinal
-        );
-        parsedSettings[index] = setting;
-        localStorage.setItem(
-          SPLIT_SETTINGS_KEY,
-          JSON.stringify(parsedSettings)
-        );
-        return setting;
+      if (!setting.id) {
+        throw new Error('Setting ID is required for update');
       }
-
-      return setting;
+      try {
+        const docRef = doc(
+          db,
+          'general_settings',
+          setting.id as string
+        ).withConverter(splitSettingConverter);
+        await updateDoc(docRef, setting);
+        return setting;
+      } catch (error) {
+        console.error('Error updating general setting:', error);
+        throw new Error('Error updating general setting');
+      }
     },
 
     onSuccess: () => {
@@ -329,24 +294,13 @@ const useUpdateSplitSetting = () => {
 
 const useDeleteSplitSetting = () => {
   const queryClient = useQueryClient();
-  return useMutation<number, Error, number>({
-    mutationFn: async (ordinal) => {
-      const settings = localStorage.getItem(SPLIT_SETTINGS_KEY);
-      if (settings) {
-        const parsedSettings = JSON.parse(settings);
-
-        const index = parsedSettings.findIndex(
-          (s: SplitSetting) => s.ordinal === ordinal
-        );
-        parsedSettings.splice(index, 1);
-        localStorage.setItem(
-          SPLIT_SETTINGS_KEY,
-          JSON.stringify(parsedSettings)
-        );
-        return ordinal;
+  return useMutation<string, Error, string>({
+    mutationFn: async (id) => {
+      if (!id) {
+        throw new Error('Setting ID is required for delete');
       }
-
-      return ordinal;
+      await deleteDoc(doc(db, 'general_settings', id));
+      return id;
     },
 
     onSuccess: () => {
@@ -366,4 +320,6 @@ export {
   useAddSplitSetting,
   useUpdateSplitSetting,
   useDeleteSplitSetting,
+  useDeleteSetting,
+  useGetSettingByName,
 };

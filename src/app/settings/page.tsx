@@ -2,14 +2,13 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  GeneralSetting,
-  SplitSetting,
   useGetSettings,
   useGetSplitSettings,
   useUpdateSetting,
   useUpdateSplitSetting,
 } from '@/hooks/settings/useSettings';
 import { cn } from '@/lib/utils';
+import { GeneralSetting, SplitSetting } from '@/types/settings';
 import { ChevronLeft, SaveIcon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Link from 'next/link';
@@ -110,7 +109,7 @@ function SettingInput({ setting, ...props }: SettingInputProps) {
   async function handleThemeChange(theme: string) {
     setTheme(theme);
 
-    const res = await update({ name: 'Theme', value: theme });
+    const res = await update({ ...setting, name: 'Theme', value: theme });
     console.log(res);
   }
 
