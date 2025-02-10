@@ -14,6 +14,7 @@ type LeaderboardData = {
   }[];
   totalPaidAccounts: number;
   downloadCSV?: () => void;
+  groupedBySalesman?: Record<string, TransactionData[] | BonusBlasterDeal[]>;
 };
 
 function getLeaderboardForChargeOverTransactions(
@@ -90,6 +91,7 @@ function getLeaderboardForChargeOverTransactions(
     podium: transactionsPodium,
     totalPaidAccounts: totalPaidTransactions,
     downloadCSV: downloadTransactionResultsAsCSV,
+    groupedBySalesman: transactionsGroupedBySaleman,
   };
 }
 

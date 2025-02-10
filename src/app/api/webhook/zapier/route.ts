@@ -52,6 +52,17 @@ interface COPayment {
   'Ads?': string;
   'Invoiced This Month': string;
 }
+interface HubsportAndChargeOverUser {
+  chargeOver: {
+    name: string;
+    id: string;
+  };
+  hubspot: {
+    id: string;
+    name: string;
+    metadata: any;
+  };
+}
 
 interface TransactionData {
   id: string;

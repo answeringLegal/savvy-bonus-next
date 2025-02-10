@@ -20,6 +20,7 @@ import {
   getLeaderboardForChargeOverTransactions,
   getLeaderboardForHubspotDeals,
 } from '@/lib/bonus-blast/chargeOverLeaderboard';
+import { getUsersByName, useGetAllUsers } from '@/hooks/users/useUsers';
 
 const quarterStart = format(startOfQuarter(new Date()), 'yyyy-MM-dd');
 const quarterEnd = format(endOfQuarter(new Date()), 'yyyy-MM-dd');
@@ -38,6 +39,8 @@ export default function LiveBonusBlast() {
       startDate: quarterStart,
       endDate: quarterEnd,
     });
+
+  const { data: users } = useGetAllUsers();
 
   const { data: dealsToday, isLoading: isDealsTodayLoading } =
     useFetchTodayDeals();
@@ -72,6 +75,7 @@ export default function LiveBonusBlast() {
   const {
     orderedSalesmen: transactionOrderedSalesmen,
     totalPaidAccounts: transactionsTotalPaidAccounts,
+    groupedBySalesman: transactionsGroupedBySalesman,
   } = getLeaderboardForChargeOverTransactions(transactions);
 
   const {
@@ -123,6 +127,7 @@ export default function LiveBonusBlast() {
         <header className='my-16 sm:my-8'>
           <QuarterIntervalDuration />
         </header>
+
         {/* All Sales */}
         <div
           className='grid grid-cols-6 gap-4'
@@ -158,7 +163,8 @@ export default function LiveBonusBlast() {
                       className='flex-1'
                       key={index}
                       salesman={{
-                        name: salesman.owner,
+                        name: getUsersByName(salesman.owner, users ?? [])
+                          ?.hubspot.name,
                         avatar: `https://randomuser.me/api/portraits/men/${
                           index + 1
                         }.jpg`,
@@ -174,7 +180,8 @@ export default function LiveBonusBlast() {
                       className='flex-1'
                       key={index}
                       salesman={{
-                        name: salesman.owner,
+                        name: getUsersByName(salesman.owner, users ?? [])
+                          ?.hubspot.name,
                         avatar: `https://randomuser.me/api/portraits/men/${
                           index + 1
                         }.jpg`,
@@ -183,9 +190,13 @@ export default function LiveBonusBlast() {
                       }}
                       deals={{
                         pending: salesman?.deals?.length,
-                        completed: Math.round(
-                          dealsOrderedSalesmen.length / (index + 1)
-                        ), //TODO: change this to actual value from chargeover api
+                        completed:
+                          (transactionsGroupedBySalesman &&
+                            transactionsGroupedBySalesman[
+                              getUsersByName(salesman.owner, users ?? [])
+                                ?.chargeover.name
+                            ]?.length) ||
+                          0,
                       }}
                       place={index + 1}
                     />

@@ -5,6 +5,7 @@ import {
   useGetSettings,
   useGetSplitSettings,
   useGetThemeFromLocalStorage,
+  useInitUsers,
   useSetThemeToLocalStorage,
   useUpdateSplitSetting,
 } from '@/hooks/settings/useSettings';
@@ -21,6 +22,7 @@ export default function SettingsPage() {
   const { setTheme } = useTheme();
   const { data: theme } = useGetThemeFromLocalStorage();
   const { mutate: setThemeInLocalStorage } = useSetThemeToLocalStorage();
+  const { mutateAsync: initUsers } = useInitUsers();
 
   const { data: splits } = useGetSplitSettings();
   const { mutateAsync: update } = useUpdateSplitSetting();
@@ -40,6 +42,7 @@ export default function SettingsPage() {
         </Link>
         <h1>Settings</h1>
       </header>
+      <Button onClick={async () => initUsers()}>Init Users</Button>
       <div className='container mx-auto'>
         <div className='border-b'></div>
         <h2 className='text-sm text-foreground/70 mt-8'>General</h2>

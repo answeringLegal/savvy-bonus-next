@@ -30,51 +30,6 @@ const useListDeal = (id: string) => {
   });
 };
 
-/*
-  ========================================
-  /search
-  ========================================
-
-  example body:
-  {
-    "filterGroups": [
-        {
-            "filters": [
-                {
-                    "propertyName": "createdate",
-                    "operator": "BETWEEN",
-                    "value": "2025-01-01",
-                    "highValue": "2025-04-01"
-                },
-                {
-                    "propertyName": "dealstage",
-                    "operator": "IN",
-                    "values": ["240513405", "240513408"]
-                },
-                {
-                    "propertyName": "previously_paying_customer_",
-                    "operator": "IN",
-                    "values": ["No"]
-                },
-                {
-                    "operator": "IN",
-                    "propertyName": "pipeline",
-                    "values": [
-                        "137772405"
-                    ]
-                }
-            ]
-        }
-       
-    ],
-    "limit": "10",
-    "properties": [
-        "date_paid",
-        "hubspot_owner_id",
-        "deal_name"
-    ]
-}
-*/
 const useQualifyingDeals = () => {
   const queryClient = useQueryClient();
   return useMutation<
@@ -183,7 +138,7 @@ const useFetchLiveQualifyingDeals = ({
             filters,
           },
         ],
-        isPaidDeal: false,
+        isPaidDeal: true,
         limit: '200',
         properties: ['date_paid', 'hubspot_owner_id', 'dealname'],
       };
