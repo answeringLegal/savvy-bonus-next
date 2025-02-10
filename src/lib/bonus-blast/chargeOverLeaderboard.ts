@@ -1,4 +1,5 @@
 import { MAX_PARTICIPANTS } from '@/config';
+import { INVALID_SALES_REP } from '@/hooks/chargeover-transactions/useCOTransactions';
 import { BonusBlasterDeal, BonusBlasterDeals } from '@/types/hubspot';
 import { TransactionData } from '@/types/transactions';
 
@@ -20,6 +21,12 @@ type LeaderboardData = {
 function getLeaderboardForChargeOverTransactions(
   transactions: TransactionData[]
 ): LeaderboardData {
+  // filter out invalid sales reps
+  transactions = transactions.filter(
+    (doc) =>
+      doc.metadata.sales_rep &&
+      !INVALID_SALES_REP.includes(doc.metadata.sales_rep)
+  );
   const transactionsGroupedBySaleman = Object.groupBy(
     transactions,
     (trx) => trx.metadata.sales_rep
@@ -104,6 +111,9 @@ function getLeaderboardForHubspotDeals(
         owner,
         deals,
       };
+    })
+    .filter((deal) => {
+      return deal.owner && !INVALID_SALES_REP.includes(deal.owner);
     })
     .slice(0, MAX_PARTICIPANTS)
     .sort((a, b) => b?.deals?.length - a?.deals?.length);

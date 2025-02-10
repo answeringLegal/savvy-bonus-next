@@ -15,7 +15,10 @@ import { SalesProgressCard } from './salesman-card-progress';
 import WebhookListener from './salesman-webhook-listener';
 import MoneyPit, { MoneyPitHandle } from './money-pit';
 import { config } from '@/site/config';
-import { useGetBonusEligibleTransactions } from '@/hooks/chargeover-transactions/useCOTransactions';
+import {
+  useGetBonusEligibleTransactions,
+  useGetTransactionsForQuarter,
+} from '@/hooks/chargeover-transactions/useCOTransactions';
 import {
   getLeaderboardForChargeOverTransactions,
   getLeaderboardForHubspotDeals,
@@ -33,6 +36,8 @@ export default function LiveBonusBlast() {
   );
   const { data: transactions, isLoading: isTransactionsLoading } =
     useGetBonusEligibleTransactions(transactionKey);
+  const { data: tTQ, isLoading: isTTQLoading } =
+    useGetTransactionsForQuarter(transactionKey);
 
   const { data: liveQualifyingDeals, isLoading: isLiveQualifyingDealsLoading } =
     useFetchLiveQualifyingDeals({
@@ -69,7 +74,7 @@ export default function LiveBonusBlast() {
       </div>
     );
 
-  if (!liveQualifyingDeals || !dealsToday || !transactions)
+  if (!liveQualifyingDeals || !dealsToday || !transactions || !tTQ)
     return <div>No data</div>;
 
   const {
@@ -78,10 +83,16 @@ export default function LiveBonusBlast() {
     groupedBySalesman: transactionsGroupedBySalesman,
   } = getLeaderboardForChargeOverTransactions(transactions);
 
+  // const {
+  //   orderedSalesmen: dealsOrderedSalesmen,
+  //   totalPaidAccounts: dealsTotalAccounts,
+  // } = getLeaderboardForHubspotDeals(liveQualifyingDeals);
+
   const {
-    orderedSalesmen: dealsOrderedSalesmen,
-    totalPaidAccounts: dealsTotalAccounts,
-  } = getLeaderboardForHubspotDeals(liveQualifyingDeals);
+    orderedSalesmen: tTQOrderedSalemen,
+    totalPaidAccounts: tTQTotalPaidAccounts,
+    groupedBySalesman: tTQGroupedBySalesman,
+  } = getLeaderboardForChargeOverTransactions(tTQ);
 
   const { orderedSalesmen: dealsTodayOrderedSalesmen } =
     getLeaderboardForHubspotDeals(dealsToday);
@@ -156,19 +167,20 @@ export default function LiveBonusBlast() {
             }}
           >
             <AnimatePresence>
-              {dealsOrderedSalesmen.map((salesman, index) => {
+              {tTQOrderedSalemen.map((salesman, index) => {
                 if (salesmenView === 'qualified')
                   return (
                     <SalesmanCard
                       className='flex-1'
                       key={index}
                       salesman={{
-                        name: getUsersByName(salesman.owner, users ?? [])
-                          ?.hubspot.name,
+                        name:
+                          getUsersByName(salesman.owner, users ?? [])?.hubspot
+                            .name ?? 'Unknown Salesman',
                         avatar: `https://randomuser.me/api/portraits/men/${
                           index + 1
                         }.jpg`,
-                        prize: dealsTotalAccounts * ACCOUNT_VALUE,
+                        prize: tTQTotalPaidAccounts * ACCOUNT_VALUE,
                         sales: salesman?.deals?.length,
                       }}
                       place={index + 1}
@@ -231,15 +243,15 @@ export default function LiveBonusBlast() {
                 (Potential) Bonus Pool
               </span>
               <h2 className='text-6xl font-extrabold text-primary flex items-center gap-4'>
-                {formatMoney(ACCOUNT_VALUE * dealsTotalAccounts)}
+                {formatMoney(ACCOUNT_VALUE * tTQTotalPaidAccounts)}
               </h2>
               <span className='font-light text-lg uppercase text-foreground/70'>
-                {dealsTotalAccounts} Sales
+                {tTQTotalPaidAccounts} Sales
               </span>
             </div>
             <MoneyPit
               ref={moneyPitRef}
-              initialPaidAccounts={dealsTotalAccounts}
+              initialPaidAccounts={tTQTotalPaidAccounts}
               elementSize={30}
             />
           </div>

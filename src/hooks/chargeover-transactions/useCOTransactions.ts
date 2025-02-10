@@ -16,7 +16,7 @@ import { TransactionData, transactionConverter } from '@/types/transactions';
 import { db } from '@/lib/firebase/config';
 import { format } from 'date-fns';
 
-const INVALID_SALES_REP = [
+export const INVALID_SALES_REP = [
   'Andrew Shatles',
   'Ben Shatles',
   'Benjamin Shatles',
