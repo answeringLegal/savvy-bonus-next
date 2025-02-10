@@ -23,94 +23,58 @@ import { getSalesmanBonus } from '@/hooks/utils/bonus';
 import { Button } from './ui/button';
 import { DownloadCloud } from 'lucide-react';
 import { config } from '../site/config';
+import {
+  useGetBonusEligibleTransactions,
+  useGetTransactionsForQuarter,
+  useGetTransactionsForThisQuarter,
+} from '@/hooks/chargeover-transactions/useCOTransactions';
+import { TransactionData } from '@/types/transactions';
+import { getLeaderboardForChargeOverTransactions } from '@/lib/bonus-blast/chargeOverLeaderboard';
 
-const quarterStart = format(
+// const quarterStart = format(
+//   startOfQuarter(subQuarters(new Date(), 1)),
+//   'yyyy-MM-dd'
+// );
+// const quarterEnd = format(
+//   endOfQuarter(subQuarters(new Date(), 1)),
+//   'yyyy-MM-dd'
+// );
+const transactionKey = `${format(
   startOfQuarter(subQuarters(new Date(), 1)),
-  'yyyy-MM-dd'
-);
-const quarterEnd = format(
-  endOfQuarter(subQuarters(new Date(), 1)),
-  'yyyy-MM-dd'
-);
+  'QQQ_yyyy'
+)}`;
+
 export default function BonusBlast() {
-  const { data, isLoading } = useFetchQualifyingDeals({
-    startDate: quarterStart,
-    endDate: quarterEnd,
-  });
+  const { data: transactions, isLoading: isTransactionsLoading } =
+    useGetBonusEligibleTransactions(transactionKey);
+  // const { data, isLoading } = useFetchQualifyingDeals({
+  //   startDate: quarterStart,
+  //   endDate: quarterEnd,
+  // });
 
-  // effect to close the dialog after 10 seconds if it's still open
-
-  if (isLoading)
+  if (isTransactionsLoading)
     return (
       <div>
         <Loader />
       </div>
     );
-  if (!data)
+  // if (!data)
+  //   return (
+  //     <div>
+  //       <h1>Hubspot is being a bitch</h1>
+  //     </div>
+  //   );
+  if (!transactions) {
     return (
       <div>
-        <h1>Hubspot is being a bitch</h1>
+        <Loader />
       </div>
     );
-  // order top 8 salesmen
-  const orderedSalesmen = Object.entries(data)
-    .map(([owner, deals]) => {
-      return {
-        owner,
-        deals,
-      };
-    })
-    .slice(0, MAX_PARTICIPANTS)
-    .sort((a, b) => b?.deals?.length - a?.deals?.length);
-
-  const salesmenPodium = [
-    { ...orderedSalesmen[1], place: 2 },
-    { ...orderedSalesmen[0], place: 1 },
-    { ...orderedSalesmen[2], place: 3 },
-  ];
-
-  const total_paid_accounts = Object.values(data).reduce(
-    (acc, deals) => acc + deals?.length || 0,
-    0
-  );
-
-  function downloadResultsAsCSV() {
-    if (!data)
-      return [['Salesman', 'DealName', 'PaidDate', 'CreateDate', 'DealID']];
-
-    const csvContent = [
-      ['Salesman', 'DealName', 'PaidDate', 'CreateDate', 'DealID'],
-      ...Object.entries(data)
-        .map(([owner, deals]) => {
-          return {
-            owner,
-            deals,
-          };
-        })
-        .flatMap((salesman) =>
-          salesman.deals.map((deal) => [
-            salesman.owner,
-            JSON.stringify(deal.properties.dealname),
-            deal.properties.date_paid,
-            deal.properties.createdate,
-            deal.properties.hs_object_id,
-          ])
-        ),
-    ]
-      .map((e) => e.join(','))
-      .join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', 'bonus_blast_results.csv');
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   }
+  const { orderedSalesmen, podium, totalPaidAccounts, downloadCSV } =
+    getLeaderboardForChargeOverTransactions(transactions);
 
+  // the game ends 30 days after the previous quarter
   const isGameEnded =
     new Date() > addDays(endOfQuarter(subQuarters(new Date(), 1)), 30);
 
@@ -128,6 +92,7 @@ export default function BonusBlast() {
         absolute
         z-[-1] animate-fade-in'
       ></div>
+
       {isGameEnded && (
         <motion.div
           className='winner-announcement absolute inset-0 flex flex-col items-center justify-center bg-black/10 backdrop-blur-xl z-50'
@@ -150,7 +115,7 @@ export default function BonusBlast() {
             <motion.div
               // fade away after 5 seconds
               initial={{ opacity: 1, y: 0 }}
-              animate={{ opacity: 0.2, y: -40, scale: 0.5 }}
+              animate={{ opacity: 0.2, y: -40 }}
               transition={{ duration: 0.5, delay: 3 }}
             >
               <DotLottieReact
@@ -166,7 +131,8 @@ export default function BonusBlast() {
               transition={{ duration: 0.5, delay: 3 }}
             >
               <h1 className='text-6xl font-extrabold text-primary text-center'>
-                {salesmenPodium[1].owner}
+                {/* {salesmenPodium[1].owner} */}
+                {podium[1].owner}
               </h1>
               <h2 className='text-2xl font-extrabold text-primary text-center'>
                 Wins the {config.name} For{' '}
@@ -216,7 +182,7 @@ export default function BonusBlast() {
             hidden: { opacity: 0, y: 20, transition: { duration: 0.2 } },
           }}
         >
-          {salesmenPodium.map((salesman) => {
+          {podium.map((salesman) => {
             if (salesman.owner)
               return (
                 <SalesmanPodium
@@ -239,7 +205,8 @@ export default function BonusBlast() {
                   key={salesman.place}
                   salesman={salesman}
                   bonus={getSalesmanBonus(
-                    total_paid_accounts * ACCOUNT_VALUE,
+                    // total_paid_accounts * ACCOUNT_VALUE,
+                    totalPaidAccounts * ACCOUNT_VALUE,
                     salesman.place
                   )}
                 />
@@ -248,87 +215,6 @@ export default function BonusBlast() {
         </motion.div>
       </header>
 
-      {/* <AnimatePresence>
-        <motion.div
-          initial={{ scale: 1, x: 0, y: 0 }}
-          animate={{
-            scale: 0.5,
-            x: '40vw',
-            y: '-40vh',
-            transition: { duration: 0.5, ease: 'easeInOut', delay: 2.5 },
-          }}
-          className='text-center my-8 p-2 rounded-r-lg bg-primary/20 border border-primary/10 shadow-lg max-w-md mx-auto fixed inset-0 z-50 pointer-events-none'
-        >
-          <Image
-            src='/clock2.png'
-            width={125}
-            height={125}
-            quality={100}
-            alt='rocket'
-            className='absolute top-12 left-6 transform -translate-x-1/2 -translate-y-1/2 '
-          />
-          <div className='absolute top-6 left-6 transform -translate-x-1/2 -translate-y-1/2 blur-3xl -z-10 bg-primary h-20 w-20 rounded-full' />
-          <p className='text-sm text-foreground/50'>Final Results</p>
-          <h2 className='text-foreground/80 font-bold text-2xl'>
-            {formatDistance(
-              addDays(endOfQuarter(subQuarters(new Date(), 1)), 30),
-              new Date(),
-              {
-                addSuffix: true,
-              }
-            )}
-          </h2>
-          <QuarterIntervalDuration
-            startDate={new Date()}
-            endDate={addDays(endOfQuarter(subQuarters(new Date(), 1)), 30)}
-          />
-          <motion.div className='w-full h-8 bg-background rounded-full overflow-hidden'>
-            <motion.div
-              className='h-full bg-primary'
-              initial='hidden'
-              animate='visible'
-              variants={{
-                visible: {
-                  width: '80%',
-                  transition: { duration: 1.5 },
-                },
-                hidden: { width: 0 },
-              }}
-            ></motion.div>
-          </motion.div>
-        </motion.div>
-      </AnimatePresence> */}
-
-      {/* <motion.div className='text-center my-8 p-2 rounded-r-lg max-w-md mx-auto relative bg-card'>
-        <Image
-          src='/clock2.png'
-          width={125}
-          height={125}
-          quality={100}
-          alt='rocket'
-          className='absolute top-12 left-6 transform -translate-x-1/2 -translate-y-1/2 '
-        />
-        <div className='absolute top-6 left-6 transform -translate-x-1/2 -translate-y-1/2 blur-3xl -z-10 bg-primary h-20 w-20 rounded-full' />
-
-        <QuarterIntervalDuration
-          startDate={new Date()}
-          endDate={addDays(endOfQuarter(subQuarters(new Date(), 1)), 30)}
-        />
-        <motion.div className='w-full h-8 bg-background rounded-full overflow-hidden'>
-          <motion.div
-            className='h-full bg-primary'
-            initial='hidden'
-            animate='visible'
-            variants={{
-              visible: {
-                width: '80%',
-                transition: { duration: 1.5 },
-              },
-              hidden: { width: 0 },
-            }}
-          ></motion.div>
-        </motion.div>
-      </motion.div> */}
       {/* All Sales */}
 
       <div
@@ -337,11 +223,19 @@ export default function BonusBlast() {
           flex: 1,
         }}
       >
-        <Button
+        {/* <Button
           title='Download Full Results as CSV'
           size={'icon'}
           className='fixed right-4 bottom-16 z-50'
           onClick={downloadResultsAsCSV}
+        >
+          <DownloadCloud className='size-4' />
+        </Button> */}
+        <Button
+          title='Download Full Results as CSV'
+          size={'icon'}
+          className='fixed right-4 bottom-16 z-50'
+          onClick={downloadCSV}
         >
           <DownloadCloud className='size-4' />
         </Button>
@@ -365,16 +259,16 @@ export default function BonusBlast() {
             hidden: { opacity: 0, y: 20, transition: { duration: 0.2 } },
           }}
         >
-          {orderedSalesmen.slice(3).map((salesman, index) => {
+          {orderedSalesmen?.slice(3)?.map((transaction, index) => {
             return (
               <SalesmanCard
                 className='flex-1'
                 key={index}
                 salesman={{
-                  name: salesman.owner,
-                  avatar: `https://randomuser.me/api/portraits/men/${index}.jpg`,
-                  prize: total_paid_accounts * ACCOUNT_VALUE,
-                  sales: salesman?.deals?.length,
+                  name: transaction.owner,
+                  avatar: `https://randomuser.me/api/portraits`,
+                  prize: totalPaidAccounts * ACCOUNT_VALUE,
+                  sales: transaction?.deals?.length,
                 }}
                 place={index + 4}
               />
@@ -385,10 +279,12 @@ export default function BonusBlast() {
           <div className='bg-card p-4 rounded-md shadow-lg flex flex-col gap-4 items-center'>
             <span className='font-light text-lg uppercase'>Bonus Pool</span>
             <h2 className='text-6xl font-extrabold text-primary flex items-center gap-4'>
-              {formatMoney(ACCOUNT_VALUE * total_paid_accounts)}
+              {/* {formatMoney(ACCOUNT_VALUE * total_paid_accounts)} */}
+              {formatMoney(ACCOUNT_VALUE * totalPaidAccounts)}
             </h2>
             <span className='font-light text-lg uppercase text-foreground/70'>
-              {total_paid_accounts} Paid Accounts
+              {/* {total_paid_accounts} Paid Accounts */}
+              {totalPaidAccounts} Paid Accounts
             </span>
           </div>
           <div className='text-center'>

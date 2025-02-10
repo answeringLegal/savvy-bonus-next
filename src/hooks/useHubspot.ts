@@ -132,14 +132,14 @@ const useQualifyingDeals = () => {
   });
 };
 
+let num_fetches_live = 0;
 /**
  *
  * @param startDate
  * @param endDate
- * @description Fetches live qualifying deals based on the provided date range on an interval
+ * @description Fetches live deals from Hubspot API where the deal is in the 'Onboarding2' pipeline and not a previously paying customer
  * @returns
  */
-let num_fetches_live = 0;
 const useFetchLiveQualifyingDeals = ({
   startDate,
   endDate,

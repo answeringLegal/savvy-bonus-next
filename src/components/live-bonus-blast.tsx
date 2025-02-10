@@ -13,35 +13,36 @@ import { Loader } from '@/components/ui/loader';
 import { ACCOUNT_VALUE, MAX_PARTICIPANTS } from '@/config';
 import { SalesProgressCard } from './salesman-card-progress';
 import WebhookListener from './salesman-webhook-listener';
-import { FlowBiteModal } from './ui/flowbite-modal';
 import MoneyPit, { MoneyPitHandle } from './money-pit';
 import { config } from '@/site/config';
+import { useGetBonusEligibleTransactions } from '@/hooks/chargeover-transactions/useCOTransactions';
+import {
+  getLeaderboardForChargeOverTransactions,
+  getLeaderboardForHubspotDeals,
+} from '@/lib/bonus-blast/chargeOverLeaderboard';
 
 const quarterStart = format(startOfQuarter(new Date()), 'yyyy-MM-dd');
 const quarterEnd = format(endOfQuarter(new Date()), 'yyyy-MM-dd');
+
+const transactionKey = `${format(new Date(), 'QQQ_yyyy')}`;
 
 export default function LiveBonusBlast() {
   const [salesmenView, setSalesmenView] = useState<'qualified' | 'all'>(
     'qualified'
   );
-  const { data, isLoading } = useFetchLiveQualifyingDeals({
-    startDate: quarterStart,
-    endDate: quarterEnd,
-  });
+  const { data: transactions, isLoading: isTransactionsLoading } =
+    useGetBonusEligibleTransactions('Q1_2025');
 
-  const { data: dealsToday, isLoading: loadingDealsToday } =
+  const { data: liveQualifyingDeals, isLoading: isLiveQualifyingDealsLoading } =
+    useFetchLiveQualifyingDeals({
+      startDate: quarterStart,
+      endDate: quarterEnd,
+    });
+
+  const { data: dealsToday, isLoading: isDealsTodayLoading } =
     useFetchTodayDeals();
 
   const moneyPitRef = useRef<MoneyPitHandle>(null);
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     const newAccounts = Math.floor(Math.random() * 5);
-  //     moneyPitRef.current?.addElements(newAccounts);
-  //   }, 5000);
-
-  //   return () => clearInterval(interval);
-  // }, []);
 
   // an effect to change salesmenView to all after 10 seconds
   useEffect(() => {
@@ -54,43 +55,42 @@ export default function LiveBonusBlast() {
     };
   }, [salesmenView]);
 
-  if (isLoading)
+  if (
+    isTransactionsLoading ||
+    isDealsTodayLoading ||
+    isLiveQualifyingDealsLoading
+  )
     return (
       <div>
         <Loader />
       </div>
     );
 
-  if (!data || !dealsToday) return <div>No data</div>;
+  if (!liveQualifyingDeals || !dealsToday || !transactions)
+    return <div>No data</div>;
 
-  const dt = Object.entries(dealsToday).map(([owner, deals]) => {
-    return {
-      owner,
-      deals,
-    };
-  });
-  const orderedSalesmen = Object.entries(data)
-    .map(([owner, deals]) => {
-      return {
-        owner,
-        deals,
-        todaySales: dealsToday[owner],
-      };
-    })
-    .slice(0, MAX_PARTICIPANTS)
-    .sort((a, b) => b?.deals?.length - a?.deals?.length);
+  const {
+    orderedSalesmen: transactionOrderedSalesmen,
+    totalPaidAccounts: transactionsTotalPaidAccounts,
+  } = getLeaderboardForChargeOverTransactions(transactions);
 
-  const total_paid_accounts = Object.values(data).reduce(
-    (acc, deals) => acc + deals?.length || 0,
-    0
-  );
+  const {
+    orderedSalesmen: dealsOrderedSalesmen,
+    totalPaidAccounts: dealsTotalAccounts,
+  } = getLeaderboardForHubspotDeals(liveQualifyingDeals);
+
+  const { orderedSalesmen: dealsTodayOrderedSalesmen } =
+    getLeaderboardForHubspotDeals(dealsToday);
+
   return (
     <>
+      {JSON.stringify(transactions)}
       <WebhookListener
         onNewDeal={(deal) => {
           moneyPitRef.current?.addElements(2);
         }}
       />
+
       {/* <FlowBiteModal /> */}
       <div className='flex flex-col h-full live-event'>
         <div
@@ -105,11 +105,12 @@ export default function LiveBonusBlast() {
         absolute
         z-[-1] animate-fade-in'
         ></div>
-        {dt.length > 0 && (
+
+        {dealsTodayOrderedSalesmen.length > 0 && (
           <Marquee>
             <span className='spacer mx-20'>🎉</span>
             <span>Sales Today: </span>
-            {dt?.map((deal, index) => {
+            {dealsTodayOrderedSalesmen?.map((deal, index) => {
               return (
                 <div key={index} className='flex items-center mx-4 gap-2'>
                   <div>{deal.owner}</div>
@@ -151,7 +152,7 @@ export default function LiveBonusBlast() {
             }}
           >
             <AnimatePresence>
-              {orderedSalesmen.map((salesman, index) => {
+              {dealsOrderedSalesmen.map((salesman, index) => {
                 if (salesmenView === 'qualified')
                   return (
                     <SalesmanCard
@@ -162,9 +163,8 @@ export default function LiveBonusBlast() {
                         avatar: `https://randomuser.me/api/portraits/men/${
                           index + 1
                         }.jpg`,
-                        prize: total_paid_accounts * ACCOUNT_VALUE,
+                        prize: dealsTotalAccounts * ACCOUNT_VALUE,
                         sales: salesman?.deals?.length,
-                        salesToday: salesman.todaySales?.length,
                       }}
                       place={index + 1}
                     />
@@ -185,7 +185,7 @@ export default function LiveBonusBlast() {
                       deals={{
                         pending: salesman?.deals?.length,
                         completed: Math.round(
-                          orderedSalesmen.length / (index + 1)
+                          dealsOrderedSalesmen.length / (index + 1)
                         ), //TODO: change this to actual value from chargeover api
                       }}
                       place={index + 1}
@@ -207,7 +207,7 @@ export default function LiveBonusBlast() {
                 className='font-extrabold text-foreground text-4xl uppercase'
                 style={{ textShadow: '2px 5.2px 1.2px hsl(var(--accent))' }}
               >
-                {format(new Date(), 'QQQ y')}
+                {format(new Date(), 'QQQ')}
               </h3>
             </div>
             <div className='flex gap-2 flex-col items-center animate-pulse'>
@@ -221,15 +221,15 @@ export default function LiveBonusBlast() {
                 (Potential) Bonus Pool
               </span>
               <h2 className='text-6xl font-extrabold text-primary flex items-center gap-4'>
-                {formatMoney(ACCOUNT_VALUE * total_paid_accounts)}
+                {formatMoney(ACCOUNT_VALUE * dealsTotalAccounts)}
               </h2>
               <span className='font-light text-lg uppercase text-foreground/70'>
-                {total_paid_accounts} Sales
+                {dealsTotalAccounts} Sales
               </span>
             </div>
             <MoneyPit
               ref={moneyPitRef}
-              initialPaidAccounts={total_paid_accounts}
+              initialPaidAccounts={dealsTotalAccounts}
               elementSize={30}
             />
           </div>

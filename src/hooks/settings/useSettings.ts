@@ -100,6 +100,35 @@ const DEFAULT_SPLIT_SETTINGS: SplitSetting[] = [
   },
 ];
 
+const useGetThemeFromLocalStorage = () => {
+  return useQuery<string>({
+    queryKey: ['theme'],
+    queryFn: async () => {
+      const theme = localStorage.getItem('theme');
+
+      console.log('theme', theme);
+      if (theme) {
+        return theme;
+      } else {
+        return 'light';
+      }
+    },
+  });
+};
+
+const useSetThemeToLocalStorage = () => {
+  const queryClient = useQueryClient();
+  return useMutation<string, Error, string>({
+    mutationFn: async (theme) => {
+      localStorage.setItem('theme', theme);
+      return theme;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['theme'] });
+    },
+  });
+};
+
 const useGetSettings = () => {
   return useQuery<GeneralSetting[], Error>({
     queryKey: ['general_settings'],
@@ -322,4 +351,6 @@ export {
   useDeleteSplitSetting,
   useDeleteSetting,
   useGetSettingByName,
+  useGetThemeFromLocalStorage,
+  useSetThemeToLocalStorage,
 };

@@ -28,6 +28,7 @@ export async function POST(req: Request) {
   await Promise.all(
     events.map(async (event) => {
       if (event.subscriptionType === 'deal.creation') {
+        console.log('New Deal - of type deal.creation:', event.objectId);
         const deal = await fetchHubSpotDeal(event.objectId);
 
         if (deal && deal.properties.pipeline === '137772405') {
@@ -61,10 +62,12 @@ export async function GET() {
 
 // **Fetch HubSpot Deal**
 async function fetchHubSpotDeal(objectId: number) {
+  console.log('Fetching Deal - Deal ID:', objectId);
   try {
     const response = await hubspotAPI.get(
       `/objects/deals/${objectId}?properties=hubspot_owner_id,pipeline,dealstage,dealname,createddate,closedate`
     );
+    console.log('Fetching Deal - Status:', response.status);
     return response.status === 200 ? response.data : null;
   } catch (error) {
     console.error(`Error fetching deal ${objectId}:`, error);
@@ -75,7 +78,9 @@ async function fetchHubSpotDeal(objectId: number) {
 // **Fetch HubSpot Owner**
 async function fetchHubSpotOwner(ownerId: number) {
   try {
+    console.log('Fetching Owner - Owner ID:', ownerId);
     const response = await hubspotAPI.get(`/owners/${ownerId}?idProperty=id`);
+    console.log('Fetching Owner - Status:', response.status);
     return response.status === 200 ? response.data : null;
   } catch (error) {
     console.error(`Error fetching owner ${ownerId}:`, error);

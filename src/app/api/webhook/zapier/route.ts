@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile } from 'fs/promises';
-import path from 'path';
 import { parse, ParseResult } from 'papaparse';
 import {
-  addDoc,
-  collection,
   doc,
   getDoc,
   getFirestore,
   setDoc,
+  Timestamp,
   updateDoc,
 } from 'firebase/firestore';
 import { initializeApp } from 'firebase/app';
@@ -19,6 +16,9 @@ import {
   startOfQuarter,
   endOfQuarter,
   subDays,
+  addDays,
+  isAfter,
+  differenceInDays,
 } from 'date-fns';
 
 // Initialize Firebase directly in the route file
@@ -53,8 +53,48 @@ interface COPayment {
   'Invoiced This Month': string;
 }
 
+interface TransactionData {
+  id: string;
+  quarter_key: string;
+  first_payment: Date;
+  status: string;
+  status_history: StatusHistory[];
+  bonus_eligible: boolean;
+  last_updated: Date;
+  metadata: {
+    customer: string;
+    state: string;
+    type_of_law: string;
+    ltv: string;
+    created: string;
+    total: string;
+    sales_rep: string;
+    support_member: string;
+    lead_source: string;
+    source_medium: string;
+    ads: string;
+    invoiced_this_month: string;
+  };
+}
+
+export type StatusHistory = {
+  status: string;
+  timestamp: Timestamp;
+};
+
 export async function POST(request: NextRequest) {
   try {
+    if (
+      !request.headers.get('Authorization') ||
+      request.headers.get('Authorization') !==
+        `Bearer ${process.env.ZAPIER_WEBHOOK_TOKEN}`
+    ) {
+      console.error(
+        'Unauthorized request:',
+        request.headers.get('Authorization')
+      );
+      return NextResponse.json({ error: 'Unauthorized', status: 401 });
+    }
     // Parse the incoming form data
     const formData = await request.formData();
     const file = formData.get('file') as File;
@@ -62,6 +102,18 @@ export async function POST(request: NextRequest) {
     // Validate file
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+    }
+
+    // ignore if file is not a CSV
+    if (!file.type.includes('csv')) {
+      console.log('Processing file:', file.type, file.size, file.name);
+      return NextResponse.json(
+        {
+          error: 'Invalid file type',
+          details: 'Please upload a CSV file',
+        },
+        { status: 200 }
+      );
     }
 
     // Convert file to buffer
@@ -85,7 +137,7 @@ export async function POST(request: NextRequest) {
           name: file.name,
           type: file.type,
           size: file.size,
-          data: parsedData.data,
+          data: parsedData.data.length,
         },
       },
       { status: 200 }
@@ -97,36 +149,40 @@ export async function POST(request: NextRequest) {
         error: 'File upload failed',
         details: error instanceof Error ? error.message : 'Unknown error',
       },
-      { status: 500 }
+      { status: 200 }
     );
   }
 }
 
-// const saveDataToFirestore = async (parsedData: ParseResult<COPayment>) => {
-//   const DB_KEY = 'bonus_deals';
-
-//   console.log('Saving data to Firestore db:', db);
-//   console.log('Parsed data:', parsedData);
-//   try {
-//     await Promise.all(
-//       parsedData.data.map(async (data) => {
-//         try {
-//           const docRef = await addDoc(collection(db, DB_KEY), data);
-//           console.log('Document written with ID: ', docRef.id);
-//         } catch (e) {
-//           console.error('Error adding document: ', e);
-//         }
-//       })
-//     );
-//   } catch (e) {
-//     console.error('Error in Promise.all: ', e);
-//   }
-// };
-
 const saveDataToFirestore = async (parsedData: ParseResult<COPayment>) => {
+  const currentStartOfQuarter = startOfQuarter(new Date());
+  const currentEndOfQuarter = endOfQuarter(new Date());
   const transactions = parsedData.data;
 
-  for (const transaction of transactions) {
+  console.log('Processing transactions:', transactions.length);
+
+  // filter out transactions that are not within the current quarter
+  const transactionsInCurrentQuarter = transactions.filter((transaction) => {
+    const firstPaymentDate = parseDate(
+      transaction['First Payment'],
+      'MMM d, yyyy',
+      new Date()
+    );
+
+    console.log('firstPaymentDate', firstPaymentDate);
+
+    return isWithinInterval(firstPaymentDate, {
+      start: currentStartOfQuarter,
+      end: currentEndOfQuarter,
+    });
+  });
+
+  console.log(
+    'Processing transactions in current quarter:',
+    transactionsInCurrentQuarter.length
+  );
+
+  for (const transaction of transactionsInCurrentQuarter) {
     try {
       // Parse the First Payment date
       const firstPaymentDate = parseDate(
@@ -142,48 +198,169 @@ const saveDataToFirestore = async (parsedData: ParseResult<COPayment>) => {
         continue;
       }
 
-      // Determine the quarter-year key (e.g., "Q4_2025")
+      // Determine the quarter-year key (e.g., "Q4_2024")
       const quarterStart = startOfQuarter(firstPaymentDate);
       const quarterEnd = endOfQuarter(firstPaymentDate);
       const year = format(firstPaymentDate, 'yyyy');
       const quarter = format(firstPaymentDate, 'QQQ');
       const quarterKey = `${quarter}_${year}`;
 
-      // Create the Firestore document reference
+      // Reference Firestore Document
       const transactionRef = doc(
         db,
         `transactions/${quarterKey}/records`,
         transaction['Customer #']
-      );
-
-      // Fetch existing transaction (if any)
+      ).withConverter({
+        toFirestore: (data: TransactionData) => data,
+        fromFirestore: (snapshot) => snapshot.data() as TransactionData,
+      });
       const transactionSnap = await getDoc(transactionRef);
       let existingTransaction = transactionSnap.exists()
         ? transactionSnap.data()
         : null;
 
-      // Calculate if the transaction is bonus-eligible
-      const isBonusEligible =
-        transaction.Status === 'Current' &&
-        isWithinInterval(firstPaymentDate, {
-          start: subDays(firstPaymentDate, 30),
-          end: quarterEnd,
-        });
+      // Backfill status history
+      let statusHistory = existingTransaction?.status_history || [];
 
-      // Track status history
-      const statusHistory = existingTransaction?.status_history || [];
-      if (
-        !existingTransaction ||
-        existingTransaction.status !== transaction.Status
-      ) {
+      const isTransactionStatusChanged =
+        existingTransaction?.status !== transaction.Status;
+
+      // if (!isTransactionStatusChanged) {
+      //   // if the status has not changed, skip the transaction
+      //   continue;
+      // }
+
+      if (!existingTransaction) {
+        // add the first status history entry as a starting point
         statusHistory.push({
           status: transaction.Status,
-          timestamp: new Date(),
+          timestamp: Timestamp.fromDate(firstPaymentDate),
         });
+
+        // if current date is past the quarter the transaction happened in, add a status history entry for the end of the quarter
+        if (isAfter(new Date(), quarterEnd)) {
+          statusHistory.push({
+            status: transaction.Status,
+            timestamp: Timestamp.fromDate(
+              addDays(endOfQuarter(firstPaymentDate), 30)
+            ),
+          });
+        } else {
+          // use today's date
+          statusHistory.push({
+            status: transaction.Status,
+            timestamp: Timestamp.fromDate(new Date()),
+          });
+        }
+      } else {
+        // if the status has changed, add a new status history entry
+        if (isTransactionStatusChanged) {
+          console.log(
+            `Well, well, well, a transaction status has changed from ${existingTransaction.status} to ${transaction.Status}`
+          );
+          statusHistory.push({
+            status: transaction.Status,
+            timestamp: Timestamp.fromDate(new Date()),
+          });
+        }
       }
 
-      // Prepare Firestore document data
-      const transactionData = {
+      // **Sort Status History Before Processing**
+      statusHistory = statusHistory.sort((a, b) =>
+        a.timestamp > b.timestamp ? 1 : -1
+      );
+
+      // **Determine Bonus Eligibility**
+      let isBonusEligible = false;
+
+      // We use this pointer to track the start of the "Current" period
+      /*
+        ========================================
+        | Status | Timestamp | lastCurrentStart | currentStatus | nextStatus | daysInCurrent | isBonusEligible |
+        ========================================
+        | Current | 2024-03-01 | null | 2024-03-01 | 2024-03-31 | 30 | true |
+        ========================================
+        | Current | 2024-03-01 | null | 2024-03-01 | 2024-03-30 | 29 | false |
+      */
+      let lastCurrentStart: Timestamp | null = null;
+
+      for (let i = 0; i < statusHistory.length; i++) {
+        const currentStatus = statusHistory[i];
+        const nextStatus = statusHistory[i + 1];
+        // early check if the window of current status is greater than 30 days
+        if (
+          currentStatus.status === 'Current' &&
+          nextStatus &&
+          nextStatus.status === 'Current'
+        ) {
+          console.log(
+            'comparing current status and next status',
+            currentStatus,
+            nextStatus
+          );
+          const daysInCurrent = differenceInDays(
+            nextStatus.timestamp.toDate(),
+            currentStatus.timestamp.toDate()
+          );
+
+          if (daysInCurrent >= 30) {
+            isBonusEligible = true;
+            break;
+          }
+
+          lastCurrentStart = null; // Reset tracking
+        }
+
+        // Start tracking "Current" period
+        if (currentStatus.status === 'Current' && !lastCurrentStart) {
+          lastCurrentStart = currentStatus.timestamp;
+        }
+
+        // If status changes, check how long "Current" lasted
+        if (lastCurrentStart && nextStatus && nextStatus.status !== 'Current') {
+          console.log(
+            'lastCurrentStart && nextStatus && nextStatus.status !== Current',
+            lastCurrentStart && nextStatus && nextStatus.status !== 'Current'
+          );
+
+          const daysInCurrent = differenceInDays(
+            nextStatus.timestamp.toDate(),
+            lastCurrentStart.toDate()
+          );
+
+          if (daysInCurrent >= 30) {
+            isBonusEligible = true;
+            break;
+          }
+
+          lastCurrentStart = null; // Reset tracking
+        }
+      }
+
+      // **Final Check: If still "Current" at the last entry, check against competion end date**
+      if (lastCurrentStart) {
+        console.log('last check block: lastCurrentStart', lastCurrentStart);
+        const competitionWindow = subDays(quarterEnd, 30);
+
+        // the competion window date would only be applicable if the current date is past the quarter end date (i.e., when backfilling)
+        // for all other cases we will check the difference between the last "Current" status date and the current date
+
+        const lastTrackedDate = isAfter(new Date(), competitionWindow)
+          ? competitionWindow
+          : new Date();
+
+        const daysInFinalCurrent = differenceInDays(
+          lastTrackedDate,
+          lastCurrentStart.toDate()
+        );
+
+        if (daysInFinalCurrent >= 30) {
+          isBonusEligible = true;
+        }
+      }
+
+      // Firestore Document Data
+      const transactionData: TransactionData = {
         id: transaction['Customer #'],
         quarter_key: quarterKey,
         first_payment: firstPaymentDate,
@@ -207,7 +384,7 @@ const saveDataToFirestore = async (parsedData: ParseResult<COPayment>) => {
         },
       };
 
-      // Save or update transaction in Firestore
+      // Save or update Firestore document
       if (existingTransaction) {
         await updateDoc(transactionRef, transactionData);
       } else {
