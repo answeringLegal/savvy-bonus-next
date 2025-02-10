@@ -31,7 +31,7 @@ export default function LiveBonusBlast() {
     'qualified'
   );
   const { data: transactions, isLoading: isTransactionsLoading } =
-    useGetBonusEligibleTransactions('Q1_2025');
+    useGetBonusEligibleTransactions(transactionKey);
 
   const { data: liveQualifyingDeals, isLoading: isLiveQualifyingDealsLoading } =
     useFetchLiveQualifyingDeals({
@@ -84,7 +84,6 @@ export default function LiveBonusBlast() {
 
   return (
     <>
-      {JSON.stringify(transactions)}
       <WebhookListener
         onNewDeal={(deal) => {
           moneyPitRef.current?.addElements(2);
