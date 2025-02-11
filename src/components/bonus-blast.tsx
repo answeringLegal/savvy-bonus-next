@@ -41,7 +41,7 @@ const transactionKey = `${format(
 )}`;
 
 export default function BonusBlast() {
-  const {} = useKindeBrowserClient;
+  // const {} = useKindeBrowserClient;
   const { data: settings } = useGetSettings();
   const { data: transactions, isLoading: isTransactionsLoading } =
     useGetBonusEligibleTransactions(transactionKey);
