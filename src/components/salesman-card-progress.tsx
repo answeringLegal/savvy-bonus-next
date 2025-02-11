@@ -45,8 +45,9 @@ export const SalesProgressCard = ({
             progress={completed}
             label={`${deals.completed} Bonus`}
             className='bg-primary rounded-l-lg'
-            popoverLabel='Qualified'
+            popoverLabel={completed > 0 ? 'Qualified' : ''}
           />
+
           <DealProgressBar
             progress={pending}
             label={`${deals.pending} Sales`}

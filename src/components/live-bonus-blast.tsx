@@ -10,7 +10,6 @@ import { Marquee } from './marquee';
 import QuarterIntervalDuration from './quarter-interval';
 import { SalesmanCard } from './salesman-card';
 import { Loader } from '@/components/ui/loader';
-import { ACCOUNT_VALUE, MAX_PARTICIPANTS } from '@/config';
 import { SalesProgressCard } from './salesman-card-progress';
 import WebhookListener from './salesman-webhook-listener';
 import MoneyPit, { MoneyPitHandle } from './money-pit';
@@ -24,6 +23,7 @@ import {
   getLeaderboardForHubspotDeals,
 } from '@/lib/bonus-blast/chargeOverLeaderboard';
 import { getUsersByName, useGetAllUsers } from '@/hooks/users/useUsers';
+import { useGetSettings } from '@/hooks/settings/useSettings';
 
 const quarterStart = format(startOfQuarter(new Date()), 'yyyy-MM-dd');
 const quarterEnd = format(endOfQuarter(new Date()), 'yyyy-MM-dd');
@@ -31,6 +31,7 @@ const quarterEnd = format(endOfQuarter(new Date()), 'yyyy-MM-dd');
 const transactionKey = `${format(new Date(), 'QQQ_yyyy')}`;
 
 export default function LiveBonusBlast() {
+  const { data: settings } = useGetSettings();
   const [salesmenView, setSalesmenView] = useState<'qualified' | 'all'>(
     'qualified'
   );
@@ -49,6 +50,13 @@ export default function LiveBonusBlast() {
 
   const { data: dealsToday, isLoading: isDealsTodayLoading } =
     useFetchTodayDeals();
+
+  const MAX_PARTICIPANTS = settings?.find(
+    (setting) => setting.name === 'MAX_PARTICIPANTS'
+  );
+  const ACCOUNT_VALUE = settings?.find(
+    (setting) => setting.name === 'ACCOUNT_VALUE'
+  );
 
   const moneyPitRef = useRef<MoneyPitHandle>(null);
 
@@ -81,7 +89,10 @@ export default function LiveBonusBlast() {
     orderedSalesmen: transactionOrderedSalesmen,
     totalPaidAccounts: transactionsTotalPaidAccounts,
     groupedBySalesman: transactionsGroupedBySalesman,
-  } = getLeaderboardForChargeOverTransactions(transactions);
+  } = getLeaderboardForChargeOverTransactions(
+    transactions,
+    Number(MAX_PARTICIPANTS?.value)
+  );
 
   // const {
   //   orderedSalesmen: dealsOrderedSalesmen,
@@ -95,7 +106,7 @@ export default function LiveBonusBlast() {
   } = getLeaderboardForChargeOverTransactions(tTQ);
 
   const { orderedSalesmen: dealsTodayOrderedSalesmen } =
-    getLeaderboardForHubspotDeals(dealsToday);
+    getLeaderboardForHubspotDeals(dealsToday, Number(MAX_PARTICIPANTS?.value));
 
   return (
     <>
@@ -171,7 +182,7 @@ export default function LiveBonusBlast() {
                 if (salesmenView === 'qualified')
                   return (
                     <SalesmanCard
-                      className='flex-1'
+                      className=''
                       key={index}
                       salesman={{
                         name:
@@ -180,7 +191,8 @@ export default function LiveBonusBlast() {
                         avatar: `https://randomuser.me/api/portraits/men/${
                           index + 1
                         }.jpg`,
-                        prize: tTQTotalPaidAccounts * ACCOUNT_VALUE,
+                        prize:
+                          tTQTotalPaidAccounts * Number(ACCOUNT_VALUE?.value),
                         sales: salesman?.deals?.length,
                       }}
                       place={index + 1}
@@ -243,7 +255,9 @@ export default function LiveBonusBlast() {
                 (Potential) Bonus Pool
               </span>
               <h2 className='text-6xl font-extrabold text-primary flex items-center gap-4'>
-                {formatMoney(ACCOUNT_VALUE * tTQTotalPaidAccounts)}
+                {formatMoney(
+                  Number(ACCOUNT_VALUE?.value) * tTQTotalPaidAccounts
+                )}
               </h2>
               <span className='font-light text-lg uppercase text-foreground/70'>
                 {tTQTotalPaidAccounts} Sales

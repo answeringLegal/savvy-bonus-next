@@ -18,19 +18,15 @@ import { Loader } from '@/components/ui/loader';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import Image from 'next/image';
 import { NativeDialog } from './ui/native-dialog';
-import { ACCOUNT_VALUE, MAX_PARTICIPANTS } from '@/config';
 import { getSalesmanBonus } from '@/hooks/utils/bonus';
 import { Button } from './ui/button';
 import { DownloadCloud } from 'lucide-react';
 import { config } from '../site/config';
-import {
-  useGetBonusEligibleTransactions,
-  useGetTransactionsForQuarter,
-  useGetTransactionsForThisQuarter,
-} from '@/hooks/chargeover-transactions/useCOTransactions';
+import { useGetBonusEligibleTransactions } from '@/hooks/chargeover-transactions/useCOTransactions';
 import { TransactionData } from '@/types/transactions';
 import { getLeaderboardForChargeOverTransactions } from '@/lib/bonus-blast/chargeOverLeaderboard';
-
+import { useGetSetting, useGetSettings } from '@/hooks/settings/useSettings';
+import { useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 // const quarterStart = format(
 //   startOfQuarter(subQuarters(new Date(), 1)),
 //   'yyyy-MM-dd'
@@ -45,6 +41,8 @@ const transactionKey = `${format(
 )}`;
 
 export default function BonusBlast() {
+  const {} = useKindeBrowserClient;
+  const { data: settings } = useGetSettings();
   const { data: transactions, isLoading: isTransactionsLoading } =
     useGetBonusEligibleTransactions(transactionKey);
   // const { data, isLoading } = useFetchQualifyingDeals({
@@ -71,8 +69,17 @@ export default function BonusBlast() {
       </div>
     );
   }
+  const MAX_PARTICIPANTS = settings?.find(
+    (setting) => setting.name === 'MAX_PARTICIPANTS'
+  );
+  const ACCOUNT_VALUE = settings?.find(
+    (setting) => setting.name === 'ACCOUNT_VALUE'
+  );
   const { orderedSalesmen, podium, totalPaidAccounts, downloadCSV } =
-    getLeaderboardForChargeOverTransactions(transactions);
+    getLeaderboardForChargeOverTransactions(
+      transactions,
+      Number(MAX_PARTICIPANTS?.value)
+    );
 
   // the game ends 30 days after the previous quarter
   const isGameEnded =
@@ -206,7 +213,7 @@ export default function BonusBlast() {
                   salesman={salesman}
                   bonus={getSalesmanBonus(
                     // total_paid_accounts * ACCOUNT_VALUE,
-                    totalPaidAccounts * ACCOUNT_VALUE,
+                    totalPaidAccounts * Number(ACCOUNT_VALUE?.value),
                     salesman.place
                   )}
                 />
@@ -267,7 +274,7 @@ export default function BonusBlast() {
                 salesman={{
                   name: transaction.owner,
                   avatar: `https://randomuser.me/api/portraits`,
-                  prize: totalPaidAccounts * ACCOUNT_VALUE,
+                  prize: totalPaidAccounts * Number(ACCOUNT_VALUE?.value),
                   sales: transaction?.deals?.length,
                 }}
                 place={index + 4}
@@ -280,7 +287,7 @@ export default function BonusBlast() {
             <span className='font-light text-lg uppercase'>Bonus Pool</span>
             <h2 className='text-6xl font-extrabold text-primary flex items-center gap-4'>
               {/* {formatMoney(ACCOUNT_VALUE * total_paid_accounts)} */}
-              {formatMoney(ACCOUNT_VALUE * totalPaidAccounts)}
+              {formatMoney(Number(ACCOUNT_VALUE?.value) * totalPaidAccounts)}
             </h2>
             <span className='font-light text-lg uppercase text-foreground/70'>
               {/* {total_paid_accounts} Paid Accounts */}

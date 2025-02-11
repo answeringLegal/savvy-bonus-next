@@ -19,7 +19,8 @@ type LeaderboardData = {
 };
 
 function getLeaderboardForChargeOverTransactions(
-  transactions: TransactionData[]
+  transactions: TransactionData[],
+  maxParticipants = MAX_PARTICIPANTS
 ): LeaderboardData {
   // filter out invalid sales reps
   transactions = transactions.filter(
@@ -42,7 +43,7 @@ function getLeaderboardForChargeOverTransactions(
         deals: deals || [],
       };
     })
-    .slice(0, MAX_PARTICIPANTS)
+    .slice(0, maxParticipants)
     .sort((a, b) => b?.deals?.length - a?.deals?.length);
 
   const transactionsPodium = [
@@ -103,7 +104,8 @@ function getLeaderboardForChargeOverTransactions(
 }
 
 function getLeaderboardForHubspotDeals(
-  deals: BonusBlasterDeals
+  deals: BonusBlasterDeals,
+  maxParticipants = MAX_PARTICIPANTS
 ): LeaderboardData {
   const orderedSalesmen = Object.entries(deals)
     .map(([owner, deals]) => {
@@ -115,7 +117,7 @@ function getLeaderboardForHubspotDeals(
     .filter((deal) => {
       return deal.owner && !INVALID_SALES_REP.includes(deal.owner);
     })
-    .slice(0, MAX_PARTICIPANTS)
+    .slice(0, maxParticipants)
     .sort((a, b) => b?.deals?.length - a?.deals?.length);
 
   const salesmenPodium = [

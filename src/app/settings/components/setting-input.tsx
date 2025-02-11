@@ -35,7 +35,7 @@ export function SettingInput({ setting, ...props }: SettingInputProps) {
           onClick={() => {
             console.log('update');
             handleUpdateSetting();
-            window.location.reload();
+            // window.location.reload();
           }}
         >
           <SaveIcon />

@@ -341,651 +341,651 @@ const useDeleteSplitSetting = () => {
   });
 };
 
-const useInitUsers = () => {
-  const qureryClient = useQueryClient();
-  return useMutation({
-    mutationFn: async () => {
-      // fetch users from the API
-      const data = [
-        {
-          hubspot: {
-            name: 'James Chmela',
-            id: 335828680,
-            meta: {
-              firstName: 'James',
-              lastName: 'Chmela',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Fidel Diaz',
-            id: 1562839052,
-            meta: {
-              firstName: 'Fidel',
-              lastName: 'Diaz',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Francis Estivo',
-            id: 145754767,
-            meta: {
-              firstName: 'Francis',
-              lastName: 'Estivo',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Chris Ferguson',
-            id: 91685705,
-            meta: {
-              firstName: 'Chris',
-              lastName: 'Ferguson',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Anthony Novellino',
-            id: 703142623,
-            meta: {
-              firstName: 'Anthony',
-              lastName: 'Novellino',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Steve Ortner',
-            id: 2082880976,
-            meta: {
-              firstName: 'Steve',
-              lastName: 'Ortner',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Evan Rasco',
-            id: 1319706621,
-            meta: {
-              firstName: 'Evan',
-              lastName: 'Rasco',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Troy Simonsen',
-            id: 140067508,
-            meta: {
-              firstName: 'Troy',
-              lastName: 'Simonsen',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Brendan Stevenson',
-            id: 1694040075,
-            meta: {
-              firstName: 'Brendan',
-              lastName: 'Stevenson',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Jeffry Victoriano',
-            id: 1224584884,
-            meta: {
-              firstName: 'Jeffry',
-              lastName: 'Victoriano',
-              isSalesman: true,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Alyssa Accardi',
-            id: 371774926,
-            meta: {
-              firstName: 'Alyssa',
-              lastName: 'Accardi',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Brock Anderson',
-            id: 48169113,
-            meta: {
-              firstName: 'Brock',
-              lastName: 'Anderson',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Krisandra Aponte',
-            id: 381905879,
-            meta: {
-              firstName: 'Krisandra',
-              lastName: 'Aponte',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Bridgitta Chango',
-            id: 1763025506,
-            meta: {
-              firstName: 'Bridgitta',
-              lastName: 'Chango',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Stephany Dionicio',
-            id: 1828539983,
-            meta: {
-              firstName: 'Stephany',
-              lastName: 'Dionicio',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Allison Dolan',
-            id: 169107611,
-            meta: {
-              firstName: 'Allison',
-              lastName: 'Dolan',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Jennika Flynn',
-            id: 1759717470,
-            meta: {
-              firstName: 'Jennika',
-              lastName: 'Flynn',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Mike G',
-            id: 900276212,
-            meta: {
-              firstName: 'Mike',
-              lastName: 'G',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Joe Galotti',
-            id: 173234136,
-            meta: {
-              firstName: 'Joe',
-              lastName: 'Galotti',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Jake Goff',
-            id: 1722684459,
-            meta: {
-              firstName: 'Jake',
-              lastName: 'Goff',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Tabitha Gray',
-            id: 930362652,
-            meta: {
-              firstName: 'Tabitha',
-              lastName: 'Gray',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Bob Joseph',
-            id: 1533929534,
-            meta: {
-              firstName: 'Bob',
-              lastName: 'Joseph',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Debbie Klivansky',
-            id: 1888315932,
-            meta: {
-              firstName: 'Debbie',
-              lastName: 'Klivansky',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Cesia Orellana',
-            id: 305194984,
-            meta: {
-              firstName: 'Cesia',
-              lastName: 'Orellana',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Jessica Ozer',
-            id: 902918816,
-            meta: {
-              firstName: 'Jessica',
-              lastName: 'Ozer',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Tony Prieto',
-            id: 274793723,
-            meta: {
-              firstName: 'Tony',
-              lastName: 'Prieto',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Giselle Rodriguez',
-            id: 1756531165,
-            meta: {
-              firstName: 'Giselle',
-              lastName: 'Rodriguez',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Stephanie Rosado',
-            id: 154516796,
-            meta: {
-              firstName: 'Stephanie',
-              lastName: 'Rosado',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Ben Shatles',
-            id: 246981299,
-            meta: {
-              firstName: 'Ben',
-              lastName: 'Shatles',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Andrew Shatles',
-            id: 1057769550,
-            meta: {
-              firstName: 'Andrew',
-              lastName: 'Shatles',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Rob Shatles',
-            id: 1131467678,
-            meta: {
-              firstName: 'Rob',
-              lastName: 'Shatles',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Leah Stack',
-            id: 1693372034,
-            meta: {
-              firstName: 'Leah',
-              lastName: 'Stack',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Tyler Tarry',
-            id: 795623751,
-            meta: {
-              firstName: 'Tyler',
-              lastName: 'Tarry',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Dev Team',
-            id: 76174254,
-            meta: {
-              firstName: 'Dev',
-              lastName: 'Team',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Support Team',
-            id: 1201413172,
-            meta: {
-              firstName: 'Support',
-              lastName: 'Team',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Genesis Torres',
-            id: 1847692118,
-            meta: {
-              firstName: 'Genesis',
-              lastName: 'Torres',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Samantha Vevante',
-            id: 1097003861,
-            meta: {
-              firstName: 'Samantha',
-              lastName: 'Vevante',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Nick Werker',
-            id: 2104170663,
-            meta: {
-              firstName: 'Nick',
-              lastName: 'Werker',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-        {
-          hubspot: {
-            name: 'Christine Yandolli',
-            id: 269985351,
-            meta: {
-              firstName: 'Christine',
-              lastName: 'Yandolli',
-              isSalesman: false,
-            },
-          },
-          chargeover: {
-            name: '',
-            id: '',
-            meta: {},
-          },
-        },
-      ];
+// const useInitUsers = () => {
+//   const qureryClient = useQueryClient();
+//   return useMutation({
+//     mutationFn: async () => {
+//       // fetch users from the API
+//       const data = [
+//         {
+//           hubspot: {
+//             name: 'James Chmela',
+//             id: 335828680,
+//             meta: {
+//               firstName: 'James',
+//               lastName: 'Chmela',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Fidel Diaz',
+//             id: 1562839052,
+//             meta: {
+//               firstName: 'Fidel',
+//               lastName: 'Diaz',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Francis Estivo',
+//             id: 145754767,
+//             meta: {
+//               firstName: 'Francis',
+//               lastName: 'Estivo',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Chris Ferguson',
+//             id: 91685705,
+//             meta: {
+//               firstName: 'Chris',
+//               lastName: 'Ferguson',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Anthony Novellino',
+//             id: 703142623,
+//             meta: {
+//               firstName: 'Anthony',
+//               lastName: 'Novellino',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Steve Ortner',
+//             id: 2082880976,
+//             meta: {
+//               firstName: 'Steve',
+//               lastName: 'Ortner',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Evan Rasco',
+//             id: 1319706621,
+//             meta: {
+//               firstName: 'Evan',
+//               lastName: 'Rasco',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Troy Simonsen',
+//             id: 140067508,
+//             meta: {
+//               firstName: 'Troy',
+//               lastName: 'Simonsen',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Brendan Stevenson',
+//             id: 1694040075,
+//             meta: {
+//               firstName: 'Brendan',
+//               lastName: 'Stevenson',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Jeffry Victoriano',
+//             id: 1224584884,
+//             meta: {
+//               firstName: 'Jeffry',
+//               lastName: 'Victoriano',
+//               isSalesman: true,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Alyssa Accardi',
+//             id: 371774926,
+//             meta: {
+//               firstName: 'Alyssa',
+//               lastName: 'Accardi',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Brock Anderson',
+//             id: 48169113,
+//             meta: {
+//               firstName: 'Brock',
+//               lastName: 'Anderson',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Krisandra Aponte',
+//             id: 381905879,
+//             meta: {
+//               firstName: 'Krisandra',
+//               lastName: 'Aponte',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Bridgitta Chango',
+//             id: 1763025506,
+//             meta: {
+//               firstName: 'Bridgitta',
+//               lastName: 'Chango',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Stephany Dionicio',
+//             id: 1828539983,
+//             meta: {
+//               firstName: 'Stephany',
+//               lastName: 'Dionicio',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Allison Dolan',
+//             id: 169107611,
+//             meta: {
+//               firstName: 'Allison',
+//               lastName: 'Dolan',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Jennika Flynn',
+//             id: 1759717470,
+//             meta: {
+//               firstName: 'Jennika',
+//               lastName: 'Flynn',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Mike G',
+//             id: 900276212,
+//             meta: {
+//               firstName: 'Mike',
+//               lastName: 'G',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Joe Galotti',
+//             id: 173234136,
+//             meta: {
+//               firstName: 'Joe',
+//               lastName: 'Galotti',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Jake Goff',
+//             id: 1722684459,
+//             meta: {
+//               firstName: 'Jake',
+//               lastName: 'Goff',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Tabitha Gray',
+//             id: 930362652,
+//             meta: {
+//               firstName: 'Tabitha',
+//               lastName: 'Gray',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Bob Joseph',
+//             id: 1533929534,
+//             meta: {
+//               firstName: 'Bob',
+//               lastName: 'Joseph',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Debbie Klivansky',
+//             id: 1888315932,
+//             meta: {
+//               firstName: 'Debbie',
+//               lastName: 'Klivansky',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Cesia Orellana',
+//             id: 305194984,
+//             meta: {
+//               firstName: 'Cesia',
+//               lastName: 'Orellana',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Jessica Ozer',
+//             id: 902918816,
+//             meta: {
+//               firstName: 'Jessica',
+//               lastName: 'Ozer',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Tony Prieto',
+//             id: 274793723,
+//             meta: {
+//               firstName: 'Tony',
+//               lastName: 'Prieto',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Giselle Rodriguez',
+//             id: 1756531165,
+//             meta: {
+//               firstName: 'Giselle',
+//               lastName: 'Rodriguez',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Stephanie Rosado',
+//             id: 154516796,
+//             meta: {
+//               firstName: 'Stephanie',
+//               lastName: 'Rosado',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Ben Shatles',
+//             id: 246981299,
+//             meta: {
+//               firstName: 'Ben',
+//               lastName: 'Shatles',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Andrew Shatles',
+//             id: 1057769550,
+//             meta: {
+//               firstName: 'Andrew',
+//               lastName: 'Shatles',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Rob Shatles',
+//             id: 1131467678,
+//             meta: {
+//               firstName: 'Rob',
+//               lastName: 'Shatles',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Leah Stack',
+//             id: 1693372034,
+//             meta: {
+//               firstName: 'Leah',
+//               lastName: 'Stack',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Tyler Tarry',
+//             id: 795623751,
+//             meta: {
+//               firstName: 'Tyler',
+//               lastName: 'Tarry',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Dev Team',
+//             id: 76174254,
+//             meta: {
+//               firstName: 'Dev',
+//               lastName: 'Team',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Support Team',
+//             id: 1201413172,
+//             meta: {
+//               firstName: 'Support',
+//               lastName: 'Team',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Genesis Torres',
+//             id: 1847692118,
+//             meta: {
+//               firstName: 'Genesis',
+//               lastName: 'Torres',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Samantha Vevante',
+//             id: 1097003861,
+//             meta: {
+//               firstName: 'Samantha',
+//               lastName: 'Vevante',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Nick Werker',
+//             id: 2104170663,
+//             meta: {
+//               firstName: 'Nick',
+//               lastName: 'Werker',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//         {
+//           hubspot: {
+//             name: 'Christine Yandolli',
+//             id: 269985351,
+//             meta: {
+//               firstName: 'Christine',
+//               lastName: 'Yandolli',
+//               isSalesman: false,
+//             },
+//           },
+//           chargeover: {
+//             name: '',
+//             id: '',
+//             meta: {},
+//           },
+//         },
+//       ];
 
-      // insert data into user collection
-      for (const user of data) {
-        await addDoc(collection(db, 'users'), user);
-      }
+//       // insert data into user collection
+//       for (const user of data) {
+//         await addDoc(collection(db, 'users'), user);
+//       }
 
-      // fetch users from the database
-      // compare and sync
-    },
-    onSuccess: () => {
-      qureryClient.invalidateQueries({ queryKey: ['users'] });
-    },
-  });
-};
+//       // fetch users from the database
+//       // compare and sync
+//     },
+//     onSuccess: () => {
+//       qureryClient.invalidateQueries({ queryKey: ['users'] });
+//     },
+//   });
+// };
 
 export {
   useGetSettings,
@@ -1000,5 +1000,4 @@ export {
   useGetSettingByName,
   useGetThemeFromLocalStorage,
   useSetThemeToLocalStorage,
-  useInitUsers,
 };
